@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type Step = "auth" | "property" | "rooms" | "needs" | "confirm" | "success";
@@ -298,12 +297,11 @@ export default function SimulatorPage() {
                     Obrigado pela sua submissão. Giovanna Lima entrará em contato em breve para apresentar os detalhes e finalizar seu orçamento.
                   </p>
                   <div className="mt-8">
-                    <Link
-                      href="/"
-                      className={cn(buttonVariants({ variant: 'default' }))}
-                    >
-                      Voltar para a página inicial
-                    </Link>
+                    <Button variant="default">
+                      <Link href="/">
+                        Voltar para a página inicial
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               )}

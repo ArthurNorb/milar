@@ -2,8 +2,7 @@ import { Metadata } from "next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, BookOpen, Briefcase, Cpu, Download } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { getSupabaseServerClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
@@ -68,15 +67,16 @@ export default async function CurriculumPage() {
             </p>
             {cvUrl && (
               <div className="mt-6">
-                <a
-                  href={cvUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(buttonVariants({ variant: 'default' }))}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Baixar CV (PDF)
-                </a>
+                <Button variant="default">
+                  <a
+                    href={cvUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Baixar CV (PDF)
+                  </a>
+                </Button>
               </div>
             )}
           </div>

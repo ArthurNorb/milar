@@ -1,5 +1,4 @@
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Quote } from "lucide-react";
@@ -42,18 +41,16 @@ export default async function HomePage() {
               Utilizo a neurociência aplicada à arquitetura para garantir que cada ambiente seja um catalisador de saúde e bem-estar.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/simulador"
-                className={cn(buttonVariants({ variant: 'default', size: 'lg' }), 'px-8')}
-              >
-                Faça a simulação do seu orçamento agora
-              </Link>
-              <Link
-                href="/portfolio"
-                className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'px-8')}
-              >
-                Conheça nossos projetos
-              </Link>
+              <Button variant="default" size="lg" className="px-8">
+                <Link href="/simulador">
+                  Faça a simulação do seu orçamento agora
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" className="px-8">
+                <Link href="/portfolio">
+                  Conheça nossos projetos
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -73,12 +70,11 @@ export default async function HomePage() {
                   Utilizo a neurociência aplicada à arquitetura para garantir que cada ambiente seja um catalisador de saúde e bem-estar. Meu trabalho é entregar cada detalhe planejado para transformar ambientes em refúgios de equilíbrio.
                 </p>
                 <div className="mt-8">
-                  <Link
-                    href="/curriculum"
-                    className={cn(buttonVariants({ variant: 'outline' }))}
-                  >
-                    Ver currículo completo
-                  </Link>
+                  <Button variant="outline">
+                    <Link href="/curriculum">
+                      Ver currículo completo
+                    </Link>
+                  </Button>
                 </div>
               </div>
               <div className="relative">
