@@ -110,8 +110,8 @@ export default function SimulatorPage() {
 
           {/* Progress */}
           <div className="mb-12">
-            <Progress value={progress} className="h-2" />
-            <div className="flex justify-between mt-2 text-sm text-muted-foreground">
+            <Progress value={progress} className="h-1 rounded-full transition-all duration-500" />
+            <div className="flex justify-between mt-2 text-xs text-muted-foreground/80 uppercase tracking-wide">
               <span>Autenticação</span>
               <span>Propriedade</span>
               <span>Ambientes</span>
@@ -121,7 +121,7 @@ export default function SimulatorPage() {
           </div>
 
           {/* Step Content */}
-          <Card className="border-border/50">
+          <Card className="border-border/30 shadow-sm transition-all duration-300">
             <CardHeader>
               <CardTitle className="text-2xl font-heading">
                 {step === "auth" && "Faça login ou cadastre-se"}
@@ -142,7 +142,7 @@ export default function SimulatorPage() {
             </CardHeader>
             <CardContent className="pt-6">
               {step === "auth" && (
-                <div className="space-y-6">
+                <div className="space-y-6 animate-in fade-in duration-300">
                   <div className="space-y-4">
                     <Label htmlFor="email">E-mail *</Label>
                     <Input
@@ -151,6 +151,7 @@ export default function SimulatorPage() {
                       placeholder="seu@email.com"
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      className="border-border/70 focus:border-primary/50 focus:ring-2 focus:ring-primary/30 py-3"
                     />
                     <Label htmlFor="name">Nome completo *</Label>
                     <Input
@@ -158,6 +159,7 @@ export default function SimulatorPage() {
                       placeholder="Seu nome"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      className="border-border/70 focus:border-primary/50 focus:ring-2 focus:ring-primary/30 py-3"
                     />
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -167,14 +169,14 @@ export default function SimulatorPage() {
               )}
 
               {step === "property" && (
-                <div className="space-y-6">
+                <div className="space-y-6 animate-in fade-in duration-300">
                   <div className="space-y-4">
                     <Label htmlFor="propertyType">Tipo de propriedade *</Label>
                     <Select
                       value={form.propertyType as string}
                       onValueChange={(value) => setForm({ ...form, propertyType: value || "" })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="border-border/70 focus:ring-2 focus:ring-primary/30 focus:border-primary/50 py-3">
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent>
@@ -192,13 +194,14 @@ export default function SimulatorPage() {
                       placeholder="Ex: 120"
                       value={form.area}
                       onChange={(e) => setForm({ ...form, area: e.target.value })}
+                      className="border-border/70 focus:border-primary/50 focus:ring-2 focus:ring-primary/30 py-3"
                     />
                   </div>
                 </div>
               )}
 
               {step === "rooms" && (
-                <div className="space-y-6">
+                <div className="space-y-6 animate-in fade-in duration-300">
                   <p className="text-sm text-muted-foreground">
                     Selecione todos os ambientes que deseja incluir no projeto.
                   </p>
@@ -215,6 +218,7 @@ export default function SimulatorPage() {
                               setForm({ ...form, rooms: form.rooms.filter(r => r !== room) });
                             }
                           }}
+                          className="border-border/70 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                         />
                         <label
                           htmlFor={room}
@@ -229,7 +233,7 @@ export default function SimulatorPage() {
               )}
 
               {step === "needs" && (
-                <div className="space-y-6">
+                <div className="space-y-6 animate-in fade-in duration-300">
                   <Label htmlFor="needs">Conte-nos mais sobre suas necessidades e expectativas</Label>
                   <Textarea
                     id="needs"
@@ -237,6 +241,7 @@ export default function SimulatorPage() {
                     rows={6}
                     value={form.needs}
                     onChange={(e) => setForm({ ...form, needs: e.target.value })}
+                    className="border-border/70 focus:border-primary/50 focus:ring-2 focus:ring-primary/30 py-3"
                   />
                   <p className="text-sm text-muted-foreground">
                     Quanto mais detalhes, mais precisa será a simulação.
@@ -245,7 +250,7 @@ export default function SimulatorPage() {
               )}
 
               {step === "confirm" && (
-                <div className="space-y-6">
+                <div className="space-y-6 animate-in fade-in duration-300">
                   <div className="rounded-lg border border-border/50 p-6 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -283,16 +288,16 @@ export default function SimulatorPage() {
               )}
 
               {step === "success" && (
-                <div className="text-center py-12">
-                  <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-6" />
-                  <h3 className="text-2xl font-heading font-semibold mb-4">
+                <div className="text-center py-12 animate-in fade-in duration-300">
+                  <CheckCircle className="h-20 w-20 text-primary mx-auto mb-8 animate-pulse" />
+                  <h3 className="text-3xl font-heading font-light mb-6">
                     Simulação recebida!
                   </h3>
-                  <p className="text-muted-foreground max-w-md mx-auto">
+                  <p className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
                     Obrigado pela sua submissão. Giovanna Lima entrará em contato em breve para apresentar os detalhes e finalizar seu orçamento.
                   </p>
                   <div className="mt-8">
-                    <Button variant="outline">
+                    <Button>
                       <a href="/">Voltar para a página inicial</a>
                     </Button>
                   </div>

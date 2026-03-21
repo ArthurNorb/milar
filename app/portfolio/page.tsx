@@ -36,17 +36,18 @@ export default function PortfolioPage() {
             Projetos que unem estética, funcionalidade e neurociência para criar ambientes que transformam.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 auto-rows-min">
           {projects.map((project, index) => (
             <Card
               key={index}
-              className="group overflow-hidden border-border/50 bg-background hover:shadow-lg transition-shadow duration-300"
+              className={`group overflow-hidden border-border/50 bg-background hover:shadow-lg transition-shadow duration-300 ${index % 3 === 0 ? 'lg:row-span-2' : ''}`}
             >
-              <div className="aspect-[4/3] overflow-hidden">
+              <div className="aspect-[3/4] overflow-hidden relative">
                 <div
                   className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
                   style={{ backgroundImage: `url(${project.image})` }}
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 group-hover:from-black/5 group-hover:via-black/10 group-hover:to-black/20 transition-all duration-500" />
               </div>
               <CardContent className="p-6">
                 <div className="flex flex-wrap gap-2 mb-4">

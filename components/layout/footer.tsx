@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-border/40 bg-background">
+    <footer className="w-full border-t border-border/20 bg-background">
       <div className="container max-w-screen-2xl px-4 py-12 md:px-6 md:py-16">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div className="space-y-4">
@@ -82,7 +82,7 @@ export function Footer() {
             </nav>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t border-border/40 text-center text-sm text-muted-foreground">
+        <div className="mt-8 pt-8 border-t border-border/20 text-center text-sm text-muted-foreground">
           <p>
             &copy; {new Date().getFullYear()} Milar Arquitetura. Todos os
             direitos reservados.

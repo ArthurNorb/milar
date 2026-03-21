@@ -8,9 +8,9 @@ export default function HomePage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-24 md:py-32">
+      <section className="relative overflow-hidden py-32 md:py-48">
         <div className="container relative z-10 max-w-screen-2xl px-4 md:px-6">
-          <div className="mx-auto max-w-3xl text-center">
+          <div className="mx-auto max-w-4xl text-center">
             <h1 className="text-5xl md:text-7xl font-heading font-light tracking-tight">
               Milar Arquitetura.
             </h1>
@@ -38,10 +38,10 @@ export default function HomePage() {
       </section>
 
       {/* About Section */}
-      <section className="py-24 md:py-32 border-t border-border/40">
+      <section className="py-32 md:py-48 border-t border-border/40">
         <div className="container max-w-screen-2xl px-4 md:px-6">
           <div className="mx-auto max-w-4xl">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-16 items-center">
               <div className="md:col-span-2">
                 <h2 className="text-3xl md:text-4xl font-heading font-light tracking-tight">
                   Muito prazer, eu sou a Giovanna Lima.
@@ -71,7 +71,7 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-24 md:py-32 border-t border-border/40 bg-muted/30">
+      <section className="py-32 md:py-48 border-t border-border/40 bg-muted/20">
         <div className="container max-w-screen-2xl px-4 md:px-6">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl md:text-4xl font-heading font-light tracking-tight">
@@ -81,8 +81,8 @@ export default function HomePage() {
               O que nossos clientes dizem sobre a experiência com neuroarquitetura.
             </p>
           </div>
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card className="border-border/50 bg-background">
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-10">
+            <Card className="border-border/60 bg-background shadow-sm hover:shadow-md transition-shadow duration-300">
               <CardContent className="p-8">
                 <Quote className="h-10 w-10 text-muted-foreground/30 mb-4" />
                 <blockquote className="text-lg italic text-foreground/90">
@@ -100,7 +100,7 @@ export default function HomePage() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-border/50 bg-background">
+            <Card className="border-border/60 bg-background shadow-sm hover:shadow-md transition-shadow duration-300">
               <CardContent className="p-8">
                 <Quote className="h-10 w-10 text-muted-foreground/30 mb-4" />
                 <blockquote className="text-lg italic text-foreground/90">
