@@ -1,65 +1,126 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Quote } from "lucide-react";
+import Link from "next/link";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex flex-col">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden py-24 md:py-32">
+        <div className="container relative z-10 max-w-screen-2xl px-4 md:px-6">
+          <div className="mx-auto max-w-3xl text-center">
+            <h1 className="text-5xl md:text-7xl font-heading font-light tracking-tight">
+              Milar Arquitetura.
+            </h1>
+            <p className="mt-6 text-2xl md:text-3xl font-heading font-light text-muted-foreground">
+              Estética e Neuroarquitetura.
+            </p>
+            <p className="mt-8 text-lg text-muted-foreground max-w-2xl mx-auto">
+              Utilizo a neurociência aplicada à arquitetura para garantir que cada ambiente seja um catalisador de saúde e bem-estar.
+            </p>
+            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="px-8">
+                <Link href="/simulador">
+                  Faça a simulação do seu orçamento agora
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" className="px-8">
+                <Link href="/portfolio">
+                  Conheça nossos projetos
+                </Link>
+              </Button>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+      </section>
+
+      {/* About Section */}
+      <section className="py-24 md:py-32 border-t border-border/40">
+        <div className="container max-w-screen-2xl px-4 md:px-6">
+          <div className="mx-auto max-w-4xl">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
+              <div className="md:col-span-2">
+                <h2 className="text-3xl md:text-4xl font-heading font-light tracking-tight">
+                  Muito prazer, eu sou a Giovanna Lima.
+                </h2>
+                <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
+                  Utilizo a neurociência aplicada à arquitetura para garantir que cada ambiente seja um catalisador de saúde e bem-estar. Meu trabalho é entregar cada detalhe planejado para transformar ambientes em refúgios de equilíbrio.
+                </p>
+                <div className="mt-8">
+                  <Button variant="outline">
+                    <Link href="/curriculum">
+                      Ver currículo completo
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+              <div className="relative">
+                <div className="aspect-square w-full max-w-xs mx-auto bg-gradient-to-br from-muted to-border rounded-full overflow-hidden">
+                  {/* Placeholder for Giovanna's photo */}
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                    <span className="text-sm">Foto de perfil</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-24 md:py-32 border-t border-border/40 bg-muted/30">
+        <div className="container max-w-screen-2xl px-4 md:px-6">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-3xl md:text-4xl font-heading font-light tracking-tight">
+              Depoimentos
+            </h2>
+            <p className="mt-4 text-muted-foreground">
+              O que nossos clientes dizem sobre a experiência com neuroarquitetura.
+            </p>
+          </div>
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card className="border-border/50 bg-background">
+              <CardContent className="p-8">
+                <Quote className="h-10 w-10 text-muted-foreground/30 mb-4" />
+                <blockquote className="text-lg italic text-foreground/90">
+                  “A casa tem um abraço. Não é só decoração, tem toda uma ciência por trás.”
+                </blockquote>
+                <div className="mt-6 flex items-center gap-4">
+                  <Avatar>
+                    <AvatarFallback>F</AvatarFallback>
+                    <AvatarImage src="" />
+                  </Avatar>
+                  <div>
+                    <p className="font-semibold">Fernando</p>
+                    <p className="text-sm text-muted-foreground">Cliente residencial</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-border/50 bg-background">
+              <CardContent className="p-8">
+                <Quote className="h-10 w-10 text-muted-foreground/30 mb-4" />
+                <blockquote className="text-lg italic text-foreground/90">
+                  “O clima mudou muito, o ambiente é muito mais relaxante. Valeu cada centavo.”
+                </blockquote>
+                <div className="mt-6 flex items-center gap-4">
+                  <Avatar>
+                    <AvatarFallback>M</AvatarFallback>
+                    <AvatarImage src="" />
+                  </Avatar>
+                  <div>
+                    <p className="font-semibold">Mariana</p>
+                    <p className="text-sm text-muted-foreground">Cliente corporativo</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

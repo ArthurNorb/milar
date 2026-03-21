@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Milar Arquitetura
+
+Portfolio and lead-generation website for architect Giovanna Lima, focusing on neuroarchitecture and minimalist design.
+
+## Features
+
+- **Home Page**: Hero section, about, testimonials
+- **Portfolio**: Editorial grid of projects with masonry layout
+- **Curriculum**: Education, experience, and skills timeline
+- **Budget Simulator**: Multi‑step form with mock authentication and API integration
+- **Responsive Design**: Mobile‑first, Tailwind CSS
+- **UI Components**: Shadcn/ui with custom neutral palette
+- **WhatsApp Integration**: Floating contact button
+- **Editorial Typography**: Playfair Display headings, Inter body
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Styling**: Tailwind CSS v4
+- **Components**: Shadcn/ui (Base UI)
+- **Icons**: Lucide React
+- **Fonts**: Google Fonts (Inter, Playfair Display)
+- **Backend**: Next.js API Routes (simulated Supabase/Resend)
 
 ## Getting Started
 
-First, run the development server:
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Copy `.env.example` to `.env.local` and fill in your keys (optional for simulation)
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+5. Open [http://localhost:3000](http://localhost:3000)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Project Structure
+
+```
+app/
+├── api/simulacao/         # Budget simulation endpoint
+├── portfolio/             # Portfolio page
+├── curriculum/            # CV page
+├── simulador/             # Multi‑step simulator
+├── layout.tsx             # Root layout with fonts, header, footer
+├── page.tsx               # Home page
+components/
+├── layout/                # Header, Footer
+├── ui/                    # Shadcn components
+public/                    # Static assets
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Design Guidelines
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Colors**: Neutral palette (whites, off‑whites, soft stones, deep charcoal)
+- **Typography**: Playfair Display for headings, Inter for body
+- **Layout**: Asymmetric grids, abundant whitespace, large image placeholders
+- **Inspiration**: Yellowtrace, Casa de Valentina
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Future Enhancements
 
-## Learn More
+- Integrate Supabase Auth and database
+- Connect Resend for email notifications
+- Add a blog/news section
+- Implement dark/light mode toggle
+- Add project filtering by category
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Proprietary – All rights reserved.
