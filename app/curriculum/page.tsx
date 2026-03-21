@@ -1,14 +1,58 @@
 import { Metadata } from "next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, BookOpen, Briefcase, Cpu } from "lucide-react";
+import { Calendar, BookOpen, Briefcase, Cpu, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { getSupabaseServerClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Currículo | Milar Arquitetura",
   description: "Formação, experiência e habilidades de Giovanna Lima.",
 };
 
-export default function CurriculumPage() {
+async function getCurriculumData() {
+  const supabase = await getSupabaseServerClient()
+  const { data, error } = await supabase
+    .from('curriculum')
+    .select('*')
+    .order('type')
+    .order('start_year', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching curriculum:', error)
+    return []
+  }
+
+  return data || []
+}
+
+async function getCvUrl() {
+  const supabase = await getSupabaseServerClient()
+  try {
+    const { data } = await supabase.storage
+      .from('project-images')
+      .list('cv', { limit: 1 })
+
+    if (data && data.length > 0) {
+      const { data: urlData } = supabase.storage
+        .from('project-images')
+        .getPublicUrl(`cv/${data[0].name}`)
+      return urlData.publicUrl
+    }
+  } catch (error) {
+    console.error('Failed to fetch CV URL:', error)
+  }
+  return null
+}
+
+export default async function CurriculumPage() {
+  const curriculumItems = await getCurriculumData()
+  const cvUrl = await getCvUrl()
+
+  const education = curriculumItems.filter(item => item.type === 'education')
+  const experience = curriculumItems.filter(item => item.type === 'experience')
+  const skills = curriculumItems.filter(item => item.type === 'skill')
+
   return (
     <div className="py-24 md:py-32">
       <div className="container max-w-screen-2xl px-4 md:px-6">
@@ -21,10 +65,20 @@ export default function CurriculumPage() {
             <p className="mt-4 text-lg text-muted-foreground">
               Formação, experiência e habilidades de Giovanna Lima.
             </p>
+            {cvUrl && (
+              <div className="mt-6">
+                <Button>
+                  <Download className="h-4 w-4 mr-2" />
+                  <a href={cvUrl} target="_blank" rel="noopener noreferrer">
+                    Baixar CV (PDF)
+                  </a>
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {/* Left column - Education & Skills */}
+            {/* Left column - Education & Experience */}
             <div className="lg:col-span-2 space-y-12">
               {/* Education */}
               <section>
@@ -37,42 +91,30 @@ export default function CurriculumPage() {
                   </h2>
                 </div>
                 <div className="space-y-6">
-                  <Card className="border-border/50">
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-xl font-semibold">
-                            UFOP - Universidade Federal de Ouro Preto
-                          </h3>
-                          <p className="text-muted-foreground">
-                            Bacharelado em Arquitetura e Urbanismo
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="ml-2">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          2016-2021
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-border/50">
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-xl font-semibold">
-                            IPOG - Instituto de Pós-Graduação e Graduação
-                          </h3>
-                          <p className="text-muted-foreground">
-                            Gestão da Qualidade e Master em Neuroarquitetura
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="ml-2">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          2023-2024
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  {education.length === 0 ? (
+                    <p className="text-muted-foreground">No education entries yet.</p>
+                  ) : (
+                    education.map((item) => (
+                      <Card key={item.id} className="border-border/50">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="text-xl font-semibold">{item.title}</h3>
+                              {item.description && (
+                                <p className="text-muted-foreground">{item.description}</p>
+                              )}
+                            </div>
+                            {(item.start_year || item.end_year) && (
+                              <Badge variant="outline" className="ml-2">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                {item.start_year} - {item.end_year || 'Present'}
+                              </Badge>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
                 </div>
               </section>
 
@@ -87,70 +129,30 @@ export default function CurriculumPage() {
                   </h2>
                 </div>
                 <div className="space-y-6">
-                  <Card className="border-border/50">
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-xl font-semibold">
-                            Milar Arquitetura
-                          </h3>
-                          <p className="text-muted-foreground">
-                            Arquiteta Autônoma
-                          </p>
-                          <ul className="mt-3 space-y-2 text-muted-foreground">
-                            <li className="flex items-start gap-2">
-                              <span className="text-primary">•</span>
-                              <span>Projetos residenciais e corporativos com foco em neuroarquitetura</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-primary">•</span>
-                              <span>Consultoria em ambientes para saúde e bem-estar</span>
-                            </li>
-                          </ul>
-                        </div>
-                        <Badge variant="outline" className="ml-2">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          2021-hoje
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-border/50">
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-xl font-semibold">
-                            Atmos Construtora
-                          </h3>
-                          <p className="text-muted-foreground">
-                            Arquiteta
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="ml-2">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          2025
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-border/50">
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-xl font-semibold">
-                            Leroy Merlin
-                          </h3>
-                          <p className="text-muted-foreground">
-                            Arquiteta
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="ml-2">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          2022-2025
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  {experience.length === 0 ? (
+                    <p className="text-muted-foreground">No experience entries yet.</p>
+                  ) : (
+                    experience.map((item) => (
+                      <Card key={item.id} className="border-border/50">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="text-xl font-semibold">{item.title}</h3>
+                              {item.description && (
+                                <p className="text-muted-foreground">{item.description}</p>
+                              )}
+                            </div>
+                            {(item.start_year || item.end_year) && (
+                              <Badge variant="outline" className="ml-2">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                {item.start_year} - {item.end_year || 'Present'}
+                              </Badge>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
                 </div>
               </section>
             </div>
@@ -169,26 +171,19 @@ export default function CurriculumPage() {
                 <Card className="border-border/50">
                   <CardContent className="p-6">
                     <div className="flex flex-wrap gap-3">
-                      {[
-                        "AutoCAD",
-                        "Sketchup",
-                        "Archicad",
-                        "Enscape",
-                        "Pacote Adobe",
-                        "Revit",
-                        "Lumion",
-                        "Project Management",
-                        "Neurociência Aplicada",
-                        "Design de Interiores",
-                      ].map((skill) => (
-                        <Badge
-                          key={skill}
-                          variant="secondary"
-                          className="font-normal py-1.5 px-3"
-                        >
-                          {skill}
-                        </Badge>
-                      ))}
+                      {skills.length === 0 ? (
+                        <p className="text-muted-foreground">No skills added yet.</p>
+                      ) : (
+                        skills.map((skill) => (
+                          <Badge
+                            key={skill.id}
+                            variant="secondary"
+                            className="font-normal py-1.5 px-3"
+                          >
+                            {skill.title}
+                          </Badge>
+                        ))
+                      )}
                     </div>
                   </CardContent>
                 </Card>

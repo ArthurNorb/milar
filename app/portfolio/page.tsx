@@ -1,30 +1,27 @@
 import { Metadata } from "next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getSupabaseServerClient } from "@/lib/supabase-server";
 
 export const metadata: Metadata = {
   title: "Portfólio | Milar Arquitetura",
   description: "Projetos que unem estética, funcionalidade e neurociência para criar ambientes que transformam.",
 };
 
-const projects = [
-  {
-    title: "Casa Manga Beiras",
-    description:
-      "Gerar conexão, equilíbrio e tranquilidade para uma família grande com rotina intensa. Cores e linhas moldando o comportamento.",
-    tags: ["Residencial", "Neuroarquitetura", "Família"],
-    image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-  },
-  {
-    title: "Apto GG",
-    description:
-      "Sala e cozinha conjugadas para interação. Elementos que geram conforto emocional e mantêm memórias afetivas. Escritório flexível com foco em neuroarquitetura para alta produtividade.",
-    tags: ["Apartamento", "Interiores", "Home Office"],
-    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w-1200&q=80",
-  },
-];
+export default async function PortfolioPage() {
+  const supabase = await getSupabaseServerClient()
+  const { data: projects, error } = await supabase
+    .from('projects')
+    .select('*')
+    .order('created_at', { ascending: false })
 
-export default function PortfolioPage() {
+  if (error) {
+    console.error('Error fetching projects:', error)
+    // Fallback to empty array
+  }
+
+  const projectList = projects || []
+
   return (
     <div className="py-24 md:py-32">
       <div className="container max-w-screen-2xl px-4 md:px-6">
@@ -37,21 +34,21 @@ export default function PortfolioPage() {
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 auto-rows-min">
-          {projects.map((project, index) => (
+          {projectList.map((project, index) => (
             <Card
-              key={index}
+              key={project.id}
               className={`group overflow-hidden border-border/50 bg-background hover:shadow-lg transition-shadow duration-300 ${index % 3 === 0 ? 'lg:row-span-2' : ''}`}
             >
               <div className="aspect-[3/4] overflow-hidden relative">
                 <div
                   className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                  style={{ backgroundImage: `url(${project.image})` }}
+                  style={{ backgroundImage: `url(${project.image_url})` }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-black/0 to-black/0 group-hover:from-black/5 group-hover:via-black/10 group-hover:to-black/20 transition-all duration-500" />
               </div>
               <CardContent className="p-6">
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {project.tags.map((tag) => (
+                  {(project.tags || []).map((tag: string) => (
                     <Badge
                       key={tag}
                       variant="secondary"
@@ -85,5 +82,5 @@ export default function PortfolioPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

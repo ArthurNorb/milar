@@ -4,10 +4,6 @@ dist/
 build/
 .git/
 *.log
-.env
-.env.local
-.env.development
-.env.production
 public/
 package-lock.json
 yarn.lock

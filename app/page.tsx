@@ -3,8 +3,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Quote } from "lucide-react";
 import Link from "next/link";
+import { getSupabaseServerClient } from "@/lib/supabase-server";
+import TestimonialForm from "@/components/testimonial-form";
 
-export default function HomePage() {
+async function getApprovedTestimonials() {
+  const supabase = await getSupabaseServerClient()
+  const { data, error } = await supabase
+    .from('testimonials')
+    .select('*')
+    .eq('is_approved', true)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching testimonials:', error)
+    return []
+  }
+
+  return data || []
+}
+
+export default async function HomePage() {
+  const testimonials = await getApprovedTestimonials()
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -82,42 +102,71 @@ export default function HomePage() {
             </p>
           </div>
           <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-10">
-            <Card className="border-border/60 bg-background shadow-sm hover:shadow-md transition-shadow duration-300">
-              <CardContent className="p-8">
-                <Quote className="h-10 w-10 text-muted-foreground/30 mb-4" />
-                <blockquote className="text-lg italic text-foreground/90">
-                  “A casa tem um abraço. Não é só decoração, tem toda uma ciência por trás.”
-                </blockquote>
-                <div className="mt-6 flex items-center gap-4">
-                  <Avatar>
-                    <AvatarFallback>F</AvatarFallback>
-                    <AvatarImage src="" />
-                  </Avatar>
-                  <div>
-                    <p className="font-semibold">Fernando</p>
-                    <p className="text-sm text-muted-foreground">Cliente residencial</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-border/60 bg-background shadow-sm hover:shadow-md transition-shadow duration-300">
-              <CardContent className="p-8">
-                <Quote className="h-10 w-10 text-muted-foreground/30 mb-4" />
-                <blockquote className="text-lg italic text-foreground/90">
-                  “O clima mudou muito, o ambiente é muito mais relaxante. Valeu cada centavo.”
-                </blockquote>
-                <div className="mt-6 flex items-center gap-4">
-                  <Avatar>
-                    <AvatarFallback>M</AvatarFallback>
-                    <AvatarImage src="" />
-                  </Avatar>
-                  <div>
-                    <p className="font-semibold">Mariana</p>
-                    <p className="text-sm text-muted-foreground">Cliente corporativo</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {testimonials.length > 0 ? (
+              testimonials.map((testimonial) => (
+                <Card key={testimonial.id} className="border-border/60 bg-background shadow-sm hover:shadow-md transition-shadow duration-300">
+                  <CardContent className="p-8">
+                    <Quote className="h-10 w-10 text-muted-foreground/30 mb-4" />
+                    <blockquote className="text-lg italic text-foreground/90">
+                      {testimonial.text}
+                    </blockquote>
+                    <div className="mt-6 flex items-center gap-4">
+                      <Avatar>
+                        <AvatarFallback>{testimonial.client_name.charAt(0)}</AvatarFallback>
+                        <AvatarImage src="" />
+                      </Avatar>
+                      <div>
+                        <p className="font-semibold">{testimonial.client_name}</p>
+                        <p className="text-sm text-muted-foreground">Cliente</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              // Fallback to static testimonials if database is empty
+              <>
+                <Card className="border-border/60 bg-background shadow-sm hover:shadow-md transition-shadow duration-300">
+                  <CardContent className="p-8">
+                    <Quote className="h-10 w-10 text-muted-foreground/30 mb-4" />
+                    <blockquote className="text-lg italic text-foreground/90">
+                      “A casa tem um abraço. Não é só decoração, tem toda uma ciência por trás.”
+                    </blockquote>
+                    <div className="mt-6 flex items-center gap-4">
+                      <Avatar>
+                        <AvatarFallback>F</AvatarFallback>
+                        <AvatarImage src="" />
+                      </Avatar>
+                      <div>
+                        <p className="font-semibold">Fernando</p>
+                        <p className="text-sm text-muted-foreground">Cliente residencial</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-border/60 bg-background shadow-sm hover:shadow-md transition-shadow duration-300">
+                  <CardContent className="p-8">
+                    <Quote className="h-10 w-10 text-muted-foreground/30 mb-4" />
+                    <blockquote className="text-lg italic text-foreground/90">
+                      “O clima mudou muito, o ambiente é muito mais relaxante. Valeu cada centavo.”
+                    </blockquote>
+                    <div className="mt-6 flex items-center gap-4">
+                      <Avatar>
+                        <AvatarFallback>M</AvatarFallback>
+                        <AvatarImage src="" />
+                      </Avatar>
+                      <div>
+                        <p className="font-semibold">Mariana</p>
+                        <p className="text-sm text-muted-foreground">Cliente corporativo</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
+          <div className="mt-16 mx-auto max-w-2xl">
+            <TestimonialForm />
           </div>
         </div>
       </section>
