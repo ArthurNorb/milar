@@ -60,6 +60,9 @@ CREATE POLICY "Allow authenticated update on curriculum"
 CREATE POLICY "Allow authenticated insert on testimonials"
   ON testimonials FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
+CREATE POLICY "Allow public insert on testimonials"
+  ON testimonials FOR INSERT WITH CHECK (is_approved = false);
+
 CREATE POLICY "Allow authenticated update on testimonials"
   ON testimonials FOR UPDATE USING (auth.role() = 'authenticated');
 

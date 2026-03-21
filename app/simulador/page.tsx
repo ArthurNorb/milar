@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -297,9 +298,12 @@ export default function SimulatorPage() {
                     Obrigado pela sua submissão. Giovanna Lima entrará em contato em breve para apresentar os detalhes e finalizar seu orçamento.
                   </p>
                   <div className="mt-8">
-                    <Button>
-                      <a href="/">Voltar para a página inicial</a>
-                    </Button>
+                    <Link
+                      href="/"
+                      className={cn(buttonVariants({ variant: 'default' }))}
+                    >
+                      Voltar para a página inicial
+                    </Link>
                   </div>
                 </div>
               )}
