@@ -1,17 +1,36 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Instagram, Mail, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-border/20 bg-background">
-      <div className="container max-w-screen-2xl px-4 py-12 md:px-6 md:py-16">
+    <footer className="w-full border-t border-border/20 bg-background relative overflow-hidden">
+      {/* Estampa de fundo sutil */}
+      <div className="absolute -bottom-20 -right-20 opacity-[0.02] pointer-events-none">
+        <Image
+          src="/estampas/Contorno Macro 06.png"
+          alt=""
+          width={400}
+          height={400}
+        />
+      </div>
+      <div className="container max-w-screen-2xl px-4 py-12 md:px-6 md:py-16 relative z-10">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div className="space-y-4">
-            <h3 className="text-lg font-heading font-semibold">
-              Milar Arquitetura
-            </h3>
+            <div className="flex items-center gap-2">
+              <Image
+                src="/logotipos/Símbolo 03.png"
+                alt="Milar Arquitetura"
+                width={24}
+                height={24}
+                className="opacity-80"
+              />
+              <h3 className="text-lg font-heading font-semibold">
+                Milar Arquitetura
+              </h3>
+            </div>
             <p className="text-sm text-muted-foreground max-w-xs">
               Estética e Neuroarquitetura. Utilizo a neurociência aplicada à
               arquitetura para garantir que cada ambiente seja um catalisador de

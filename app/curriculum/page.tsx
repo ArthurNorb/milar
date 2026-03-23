@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, BookOpen, Briefcase, Cpu, Download } from "lucide-react";
@@ -54,8 +55,25 @@ export default async function CurriculumPage() {
   const skills = curriculumItems.filter(item => item.type === 'skill')
 
   return (
-    <div className="py-24 md:py-32">
-      <div className="container max-w-screen-2xl px-4 md:px-6">
+    <div className="py-24 md:py-32 relative overflow-hidden">
+      {/* Estampas de fundo sutis */}
+      <div className="absolute -left-40 -top-40 opacity-[0.02] pointer-events-none">
+        <Image
+          src="/estampas/Contorno Macro 04.png"
+          alt=""
+          width={500}
+          height={500}
+        />
+      </div>
+      <div className="absolute -right-40 -bottom-40 opacity-[0.02] pointer-events-none">
+        <Image
+          src="/estampas/Preenchida Macro 05.png"
+          alt=""
+          width={500}
+          height={500}
+        />
+      </div>
+      <div className="container max-w-screen-2xl px-4 md:px-6 relative z-10">
         <div className="mx-auto max-w-5xl">
           {/* Header */}
           <div className="text-center mb-16">
@@ -99,8 +117,17 @@ export default async function CurriculumPage() {
                     <p className="text-muted-foreground">No education entries yet.</p>
                   ) : (
                     education.map((item) => (
-                      <Card key={item.id} className="border-border/50">
-                        <CardContent className="p-6">
+                      <Card key={item.id} className="border-border/50 relative overflow-hidden">
+                        {/* Estampa sutil */}
+                        <div className="absolute -right-6 -bottom-6 opacity-10 pointer-events-none">
+                          <Image
+                            src="/estampas/Contorno Micro 01.png"
+                            alt=""
+                            width={80}
+                            height={80}
+                          />
+                        </div>
+                        <CardContent className="p-6 relative z-10">
                           <div className="flex justify-between items-start">
                             <div>
                               <h3 className="text-xl font-semibold">{item.title}</h3>
@@ -137,8 +164,17 @@ export default async function CurriculumPage() {
                     <p className="text-muted-foreground">No experience entries yet.</p>
                   ) : (
                     experience.map((item) => (
-                      <Card key={item.id} className="border-border/50">
-                        <CardContent className="p-6">
+                      <Card key={item.id} className="border-border/50 relative overflow-hidden">
+                        {/* Estampa sutil */}
+                        <div className="absolute -right-6 -bottom-6 opacity-10 pointer-events-none">
+                          <Image
+                            src="/estampas/Contorno Micro 01.png"
+                            alt=""
+                            width={80}
+                            height={80}
+                          />
+                        </div>
+                        <CardContent className="p-6 relative z-10">
                           <div className="flex justify-between items-start">
                             <div>
                               <h3 className="text-xl font-semibold">{item.title}</h3>
@@ -172,7 +208,16 @@ export default async function CurriculumPage() {
                     Hard Skills
                   </h2>
                 </div>
-                <Card className="border-border/50">
+                <Card className="border-border/50 relative overflow-hidden">
+                  {/* Estampa sutil */}
+                  <div className="absolute -left-6 -top-6 opacity-10 pointer-events-none">
+                    <Image
+                      src="/estampas/Contorno Micro 02.png"
+                      alt=""
+                      width={80}
+                      height={80}
+                    />
+                  </div>
                   <CardContent className="p-6">
                     <div className="flex flex-wrap gap-3">
                       {skills.length === 0 ? (
@@ -194,7 +239,16 @@ export default async function CurriculumPage() {
               </section>
 
               <section>
-                <Card className="border-border/50">
+                <Card className="border-border/50 relative overflow-hidden">
+                  {/* Estampa sutil */}
+                  <div className="absolute -right-6 -bottom-6 opacity-10 pointer-events-none">
+                    <Image
+                      src="/estampas/Preenchida Micro 03.png"
+                      alt=""
+                      width={100}
+                      height={100}
+                    />
+                  </div>
                   <CardContent className="p-6">
                     <h3 className="text-xl font-semibold mb-4">
                       Sobre a abordagem

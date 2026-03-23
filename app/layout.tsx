@@ -3,23 +3,20 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { WhatsAppButton } from "@/components/ui/whatsapp-button";
 
 const inter = Inter({
-  variable: "--font-inter",
   subsets: ["latin"],
-  display: "swap",
+  variable: "--font-inter",
 });
 
 const playfair = Playfair_Display({
-  variable: "--font-playfair",
   subsets: ["latin"],
-  display: "swap",
+  variable: "--font-playfair",
 });
 
 export const metadata: Metadata = {
-  title: "Milar Arquitetura | Estética e Neuroarquitetura",
-  description: "Utilizo a neurociência aplicada à arquitetura para garantir que cada ambiente seja um catalisador de saúde e bem-estar.",
+  title: "Milar Arquitetura | Giovanna Lima",
+  description: "Estética e Neuroarquitetura por Giovanna Lima.",
 };
 
 export default function RootLayout({
@@ -28,16 +25,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="pt"
-      className={`${inter.variable} ${playfair.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
+    <html lang="pt-BR">
+      <body
+        className={`${inter.variable} ${playfair.variable} font-sans antialiased bg-background text-foreground flex flex-col min-h-screen selection:bg-primary selection:text-primary-foreground`}
+      >
         <div className="grain-overlay" />
         <Header />
-        <main className="flex-1">{children}</main>
+        <main className="grow">{children}</main>
         <Footer />
-        <WhatsAppButton />
       </body>
     </html>
   );
