@@ -24,6 +24,10 @@ export const metadata: Metadata = {
   title: "Milar Arquitetura | Giovanna Lima",
   description:
     "Design que toca o coração e transforma. Estética e Neuroarquitetura por Giovanna Lima.",
+  icons: {
+    icon: "/logotipos/Submarca01.png",
+    apple: "/logotipos/Submarca01.png",
+  },
 };
 
 export default function RootLayout({

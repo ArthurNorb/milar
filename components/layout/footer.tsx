@@ -5,45 +5,26 @@ import { Instagram, Mail, Phone } from "lucide-react";
 export function Footer() {
   return (
     <footer className="w-full bg-[#2e3d30] text-[#e3d9ce] relative overflow-hidden pt-24 pb-10 border-t-8 border-[#87381e]">
-      {/* Estampas de fundo orgânicas com animações sutis */}
-      <div className="absolute top-0 right-0 opacity-[0.03] pointer-events-none translate-x-1/4 -translate-y-1/4">
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.2] mix-blend-overlay">
         <Image
-          src="/estampas/Preenchida Macro 02.png"
+          src="/estampas/Preenchida Macro 04.png"
           alt="Textura de fundo"
-          width={800}
-          height={800}
-          className="animate-[spin_90s_linear_infinite]"
-        />
-      </div>
-      <div className="absolute bottom-0 left-0 opacity-[0.05] pointer-events-none -translate-x-1/3 translate-y-1/3">
-        <Image
-          src="/estampas/Contorno Macro 06.png"
-          alt="Textura de fundo"
-          width={600}
-          height={600}
+          fill
+          className="object-cover object-center"
+          priority
         />
       </div>
 
       <div className="container max-w-screen-2xl px-6 md:px-12 mx-auto relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-8">
-          {/* Sessão da Marca */}
           <div className="md:col-span-5 space-y-8">
             <div className="flex items-center gap-4">
               <Image
-                src="/logotipos/Símbolo 03.png"
+                src="/logotipos/LogotipoPrincipal03.png"
                 alt="Milar Arquitetura"
-                width={48}
-                height={48}
-                className="opacity-90"
+                width={170}
+                height={170}
               />
-              <div className="flex flex-col">
-                <h3 className="text-4xl font-serif tracking-wide leading-none text-[#e3d9ce]">
-                  milar
-                </h3>
-                <span className="text-[#bfa086] text-[10px] font-['Spartan'] uppercase tracking-[0.3em] mt-1">
-                  Arquitetura
-                </span>
-              </div>
             </div>
             <p className="text-[#e3d9ce]/70 text-base max-w-sm font-light leading-relaxed">
               Utilizo a neurociência aplicada à arquitetura para garantir que
@@ -57,7 +38,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Links Rápidos com Microinterações */}
           <div className="md:col-span-3 space-y-8">
             <h4 className="text-xs font-['Spartan'] font-semibold uppercase tracking-[0.2em] text-[#bfa086]">
               Navegação
@@ -81,7 +61,6 @@ export function Footer() {
             </nav>
           </div>
 
-          {/* Contato Desenhado */}
           <div className="md:col-span-4 space-y-8">
             <h4 className="text-xs font-['Spartan'] font-semibold uppercase tracking-[0.2em] text-[#bfa086]">
               Conexão
@@ -128,10 +107,28 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Base do Rodapé */}
-        <div className="mt-20 pt-8 border-t border-[#756d47]/30 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-['Spartan'] text-[#756d47] uppercase tracking-widest">
-          <p>&copy; {new Date().getFullYear()} Milar Arquitetura.</p>
-          <p className="text-[#a39f86]">Belo Horizonte, MG</p>
+        <div className="mt-20 pt-8 border-t border-[#756d47]/30 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-['Spartan'] text-[#756d47] uppercase tracking-widest">
+          <div className="text-center md:text-left">
+            <p>&copy; {new Date().getFullYear()} Milar Arquitetura.</p>
+            <p className="text-[#a39f86] mt-1">Belo Horizonte, MG</p>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <p className="text-[#a39f86] mb-2">Desenvolvido por</p>
+            <a
+              href="https://www.weblito.tech/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Image
+                src="/WEBLITOTECH.png"
+                alt="WebLito.tech"
+                width={120}
+                height={40}
+                className="opacity-40 transition-all duration-300 hover:opacity-100 hover:scale-105"
+              />
+            </a>
+          </div>
         </div>
       </div>
     </footer>

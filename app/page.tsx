@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Quote, ArrowRight, PenLine, Sparkles } from "lucide-react";
+import { Quote, ArrowRight, PenLine } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { getSupabaseServerClient } from "@/lib/supabase-server";
@@ -35,9 +35,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#e3d9ce] text-[#2e3d30] overflow-hidden selection:bg-[#87381e] selection:text-[#e3d9ce]">
-      {/* HERO SECTION - Responsiva e Imersiva */}
       <section className="relative min-h-[90vh] md:min-h-screen flex items-center pt-28 pb-16 md:pt-20 md:pb-12 bg-[#2e3d30] text-[#e3d9ce] rounded-b-[2.5rem] md:rounded-b-[5rem] shadow-2xl z-20">
-        {/* Textura de Fundo Orgânica */}
         <div className="absolute inset-0 opacity-10 pointer-events-none mix-blend-overlay">
           <Image
             src="/estampas/Preenchida Macro 01.png"
@@ -50,18 +48,19 @@ export default async function HomePage() {
         <div className="container max-w-screen-2xl px-5 md:px-12 mx-auto grid lg:grid-cols-12 gap-10 md:gap-12 items-center relative z-10">
           <div className="lg:col-span-7 space-y-6 md:space-y-8 flex flex-col items-start">
             <div className="inline-flex items-center gap-2 md:gap-3 px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-[#bfa086]/30 bg-[#756d47]/20 backdrop-blur-sm">
-              <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-[#bfa086]" />
               <span className="text-[10px] md:text-xs font-['Spartan'] tracking-[0.2em] uppercase text-[#bfa086]">
                 Neuroarquitetura Aplicada
               </span>
             </div>
 
-            <h1 className="text-[2.75rem] leading-[1.1] sm:text-6xl md:text-7xl lg:text-8xl font-serif tracking-tight">
-              Design que <br />
-              <span className="italic text-[#87381e] font-light">
-                toca o coração
-              </span>{" "}
-              <br className="hidden sm:block" />e transforma.
+            <h1 className="text-[2.75rem] leading-[1.1] sm:text-6xl md:text-7xl font-serif tracking-tight">
+              Onde o lado <br className="sm:hidden" />
+              <span className="italic text-[#c3532e] font-light">de fora</span>
+              <br />
+              encontra o <br className="sm:hidden" />
+              <span className="italic text-[#c3532e] font-light">
+                de dentro.
+              </span>
             </h1>
 
             <p className="text-base md:text-lg lg:text-xl text-[#e3d9ce]/80 max-w-lg font-light leading-relaxed">
@@ -74,7 +73,7 @@ export default async function HomePage() {
               <Button
                 render={<Link href="/simulador" />}
                 size="lg"
-                className="w-full sm:w-auto px-8 h-14 bg-[#87381e] hover:bg-[#87381e]/80 text-[#e3d9ce] font-['Spartan'] text-xs tracking-wider uppercase rounded-full transition-transform hover:scale-105 duration-300 flex items-center justify-center shadow-lg"
+                className="w-full sm:w-auto px-8 h-14 bg-[#c3532e] hover:bg-[#c3532e]/80 text-[#e3d9ce] font-['Spartan'] text-xs tracking-wider uppercase rounded-full transition-transform hover:scale-105 duration-300 flex items-center justify-center shadow-lg"
               >
                 Simular Orçamento
               </Button>
@@ -89,13 +88,12 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Imagem Hero - Oculta no mobile muito pequeno para não poluir, visível em tablets/desktop */}
           <div className="lg:col-span-5 relative h-[50vh] lg:h-[75vh] w-full hidden sm:block group mt-8 lg:mt-0">
-            <div className="absolute inset-0 bg-[#87381e] rounded-t-full transform translate-x-3 translate-y-3 md:translate-x-4 md:translate-y-4 transition-transform group-hover:translate-x-6 group-hover:translate-y-6 duration-700 ease-out" />
-            <div className="relative h-full w-full rounded-t-full overflow-hidden border-4 border-[#2e3d30] shadow-2xl">
+            <div className="absolute inset-0 bg-[#c3532e] rounded-t-full transform translate-x-3 translate-y-3 md:translate-x-4 md:translate-y-4 transition-transform group-hover:translate-x-6 group-hover:translate-y-6 duration-700 ease-out z-0" />
+            <div className="relative h-full w-full rounded-t-full overflow-hidden border-4 border-[#2e3d30] shadow-2xl z-10 bg-[#bfa086]">
               <Image
-                src="/image_4dc6a4.jpg" // Lembre-se de trocar para uma foto real do portfólio
-                alt="Projeto de Arquitetura Milar"
+                src="/hero.png"
+                alt="Projeto Milar"
                 fill
                 className="object-cover object-center transition-transform duration-1000 group-hover:scale-110"
                 priority
@@ -105,22 +103,18 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ABOUT SECTION - Sticky Scroll & Mobile Layout */}
-      <section className="py-20 md:py-40 relative z-10">
-        <div className="absolute top-1/3 left-0 -translate-y-1/2 -translate-x-1/4 md:-translate-x-1/2 opacity-10 pointer-events-none">
+      <section className="py-20 md:py-40 relative z-10 overflow-hidden">
+        <div className="absolute inset-0 z-0 opacity-[0.04] pointer-events-none">
           <Image
             src="/estampas/Contorno Macro 04.png"
-            alt=""
-            width={600}
-            height={600}
-            className="w-75 md:w-150"
+            alt="Textura de fundo"
+            fill
+            className="object-cover object-center"
           />
         </div>
 
-        <div className="container max-w-7xl px-5 md:px-12 mx-auto">
-          {/* Invertemos a ordem no mobile: Texto primeiro, Foto depois. No Desktop fica lado a lado com foto fixa. */}
+        <div className="container max-w-7xl px-5 md:px-12 mx-auto relative z-10">
           <div className="flex flex-col-reverse md:grid md:grid-cols-2 gap-12 md:gap-24 items-start">
-            {/* Coluna da Imagem com efeito Sticky no Desktop */}
             <div className="w-full h-full relative">
               <div className="md:sticky md:top-32 relative aspect-3/4 w-[80%] md:w-full max-w-md mx-auto group">
                 <div className="absolute inset-0 bg-[#756d47] rounded-b-full -rotate-6 transition-transform group-hover:rotate-0 duration-500" />
@@ -139,7 +133,6 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Coluna de Texto */}
             <div className="space-y-6 md:space-y-8 pt-4 md:pt-10">
               <h2 className="text-[10px] md:text-xs font-['Spartan'] tracking-[0.3em] uppercase text-[#87381e]">
                 A Arquiteta
@@ -182,27 +175,22 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* TESTIMONIALS SECTION - Carousel Mobile & Grid Desktop */}
       <section className="py-20 md:py-32 bg-[#2e3d30] text-[#e3d9ce] relative rounded-t-[2.5rem] md:rounded-t-[5rem]">
-        <div className="absolute right-0 bottom-0 opacity-5 pointer-events-none">
-          <Image
-            src="/estampas/Preenchida Micro 05.png"
-            alt=""
-            width={500}
-            height={500}
-            className="w-62.5 md:w-125"
-          />
-        </div>
-
         <div className="container max-w-7xl px-5 md:px-12 mx-auto relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-20 gap-6 md:gap-8 border-b border-[#e3d9ce]/20 pb-8 md:pb-12">
             <div className="space-y-3 md:space-y-4 max-w-2xl">
               <span className="text-[10px] md:text-xs font-['Spartan'] tracking-[0.3em] uppercase text-[#bfa086]">
                 Feedbacks
               </span>
-              <h2 className="text-[2.5rem] leading-tight md:text-6xl font-serif tracking-tight">
-                A experiência <br className="md:hidden" />
-                <span className="italic text-[#bfa086]">Milar</span>
+              <h2 className="text-[2.5rem] leading-tight md:text-6xl font-serif tracking-tight flex flex-wrap items-center gap-x-4 gap-y-2">
+                A experiência
+                <Image
+                  src="/logotipos/Logotipo Variação 02.png"
+                  alt="Milar"
+                  width={140}
+                  height={45}
+                  className="w-27.5 md:w-35 h-auto object-contain shrink-0 mt-1 md:mt-2 mb-1"
+                />
               </h2>
             </div>
 
@@ -232,8 +220,6 @@ export default async function HomePage() {
             </Dialog>
           </div>
 
-          {/* Carrossel no Mobile / Grid no Desktop */}
-          {/* Adicionando padding lateral negativo no mobile para a rolagem vazar a tela e mostrar que tem mais item */}
           <div className="flex overflow-x-auto md:grid md:grid-cols-2 gap-6 md:gap-12 lg:gap-24 snap-x snap-mandatory pb-8 md:pb-0 -mx-5 px-5 md:mx-0 md:px-0 scrollbar-hide">
             {testimonials.length > 0 ? (
               testimonials.map((testimonial) => (
@@ -263,7 +249,6 @@ export default async function HomePage() {
                 </div>
               ))
             ) : (
-              // Depoimentos Reais do PDF (Fallback)
               <>
                 <div className="min-w-[85vw] md:min-w-0 snap-center group cursor-pointer bg-[#e3d9ce]/5 md:bg-transparent p-6 md:p-0 rounded-3xl md:rounded-none border border-[#bfa086]/10 md:border-none">
                   <Quote className="h-8 w-8 md:h-10 md:w-10 text-[#87381e] mb-4 md:mb-6 transform transition-transform group-hover:-translate-y-2 duration-300" />
