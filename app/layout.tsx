@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display, League_Spartan } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { WhatsAppButton } from "@/components/ui/whatsapp-button";
+import { ConditionalLayout } from "@/components/layout/conditional-layout";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,10 +22,6 @@ export const metadata: Metadata = {
   title: "Milar Arquitetura | Giovanna Lima",
   description:
     "Design que toca o coração e transforma. Estética e Neuroarquitetura por Giovanna Lima.",
-  icons: {
-    icon: "/logotipos/Submarca01.png",
-    apple: "/logotipos/Submarca01.png",
-  },
 };
 
 export default function RootLayout({
@@ -41,10 +35,7 @@ export default function RootLayout({
         className={`${inter.variable} ${playfair.variable} ${spartan.variable} font-sans antialiased bg-[#e3d9ce] text-[#2e3d30] flex flex-col min-h-screen selection:bg-[#87381e] selection:text-[#e3d9ce]`}
       >
         <div className="grain-overlay pointer-events-none" />
-        <Header />
-        <main className="grow flex flex-col">{children}</main>
-        <Footer />
-        <WhatsAppButton />
+        <ConditionalLayout>{children}</ConditionalLayout>
       </body>
     </html>
   );

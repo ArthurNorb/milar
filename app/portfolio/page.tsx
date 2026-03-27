@@ -86,12 +86,6 @@ export default async function PortfolioPage() {
                     className="object-cover scale-150 rotate-12"
                   />
                 </div>
-
-                <div className="absolute bottom-6 right-6 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                  <div className="w-12 h-12 bg-[#e3d9ce] rounded-full flex items-center justify-center text-[#87381e] shadow-lg">
-                    <ArrowUpRight className="w-6 h-6" />
-                  </div>
-                </div>
               </div>
 
               <div

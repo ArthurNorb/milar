@@ -15,11 +15,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Lock, Loader2, ShieldCheck } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -46,28 +47,24 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#e3d9ce] p-6 relative overflow-hidden">
-      {/* Elementos Decorativos de Fundo */}
-      <div className="absolute top-0 right-0 w-150 h-150 opacity-[0.03] pointer-events-none translate-x-1/4 -translate-y-1/4">
+      <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none">
         <Image
-          src="/estampas/Contorno Macro 02.png"
-          alt=""
+          src="/estampas/Preenchida Macro 03.png"
+          alt="Fundo"
           fill
-          className="animate-[spin_120s_linear_infinite]"
+          className="object-cover object-center"
+          priority
         />
-      </div>
-      <div className="absolute bottom-0 left-0 w-100 h-100 opacity-[0.03] pointer-events-none -translate-x-1/4 translate-y-1/4">
-        <Image src="/estampas/Preenchida Macro 03.png" alt="" fill />
       </div>
 
       <Card className="w-full max-w-md border-none shadow-2xl bg-[#e3d9ce]/80 backdrop-blur-xl rounded-[2.5rem] relative z-10 overflow-hidden">
-        {/* Barra de Acentuação Superior */}
         <div className="h-2 w-full bg-[#2e3d30]" />
 
         <CardHeader className="pt-10 pb-6 text-center">
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 rounded-full bg-[#2e3d30] flex items-center justify-center shadow-inner">
               <Image
-                src="/logotipos/Símbolo 01.png"
+                src="/logotipos/Submarca01.png"
                 alt="Milar Logo"
                 width={32}
                 height={32}
@@ -94,7 +91,7 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-white/40 focus:bg-white/60"
+                className="bg-white/40 focus:bg-white/60 text-[#2e3d30]"
               />
             </div>
 
@@ -107,7 +104,7 @@ export default function AdminLoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-white/40 focus:bg-white/60"
+                  className="bg-white/40 focus:bg-white/60 text-[#2e3d30]"
                 />
               </div>
             </div>
@@ -125,7 +122,7 @@ export default function AdminLoginPage() {
 
             <Button
               type="submit"
-              className="w-full h-12 text-xs uppercase tracking-widest font-['Spartan']"
+              className="w-full h-12 text-xs uppercase tracking-widest font-['Spartan'] bg-[#2e3d30] hover:bg-[#87381e] transition-colors"
               disabled={loading}
             >
               {loading ? (
@@ -135,7 +132,6 @@ export default function AdminLoginPage() {
                 </>
               ) : (
                 <>
-                  <ShieldCheck className="mr-2 h-4 w-4" />
                   Entrar no Painel
                 </>
               )}
@@ -145,14 +141,13 @@ export default function AdminLoginPage() {
           <div className="mt-8 pt-6 border-t border-[#bfa086]/20 text-center">
             <p className="text-[10px] font-['Spartan'] uppercase tracking-wider text-[#756d47]/70 leading-relaxed">
               Este é um ambiente privado e monitorado. <br />
-              Se esqueceu sua senha, contate o suporte técnico.
+              Acesso exclusivo à gestão do site.
             </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Rodapé Discreto */}
-      <div className="absolute bottom-6 w-full text-center">
+      <div className="absolute bottom-6 w-full text-center z-10">
         <p className="text-[9px] font-['Spartan'] uppercase tracking-[0.3em] text-[#2e3d30]/40">
           Milar Arquitetura © 2026
         </p>
