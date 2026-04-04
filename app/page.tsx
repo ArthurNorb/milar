@@ -64,9 +64,9 @@ export default async function HomePage() {
             </h1>
 
             <p className="text-base md:text-lg lg:text-xl text-[#e3d9ce]/80 max-w-lg font-light leading-relaxed">
-              Elevamos o nível do seu sonho unindo estética sofisticada e
-              neurociência. Cada ambiente projetado para ser um verdadeiro
-              refúgio de bem-estar.
+              A neurociência faz parte da criação em nossos projetos.
+              Trabalhamos forma personalizada, unindo estética com personalidade
+              e bem-estar, desenvolvendo o ambiente ideal para você.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4 md:pt-6 w-full sm:w-auto">
@@ -253,9 +253,9 @@ export default async function HomePage() {
                 <div className="min-w-[85vw] md:min-w-0 snap-center group cursor-pointer bg-[#e3d9ce]/5 md:bg-transparent p-6 md:p-0 rounded-3xl md:rounded-none border border-[#bfa086]/10 md:border-none">
                   <Quote className="h-8 w-8 md:h-10 md:w-10 text-[#87381e] mb-4 md:mb-6 transform transition-transform group-hover:-translate-y-2 duration-300" />
                   <blockquote className="text-xl md:text-2xl lg:text-3xl font-serif font-light leading-snug text-[#e3d9ce] mb-6 md:mb-8">
-                    "A casa tem um abraço. Não é só decoração, tem toda uma
+                    A casa tem um abraço. Não é só decoração, tem toda uma
                     ciência por trás que você explicou. Todo mundo perguntou o
-                    seu contato!"
+                    seu contato!
                   </blockquote>
                   <div className="flex items-center gap-4">
                     <Avatar className="h-12 w-12 md:h-14 md:w-14 border-2 border-[#bfa086]">
@@ -277,8 +277,8 @@ export default async function HomePage() {
                 <div className="min-w-[85vw] md:min-w-0 snap-center group cursor-pointer bg-[#e3d9ce]/5 md:bg-transparent p-6 md:p-0 rounded-3xl md:rounded-none border border-[#bfa086]/10 md:border-none">
                   <Quote className="h-8 w-8 md:h-10 md:w-10 text-[#87381e] mb-4 md:mb-6 transform transition-transform group-hover:-translate-y-2 duration-300" />
                   <blockquote className="text-xl md:text-2xl lg:text-3xl font-serif font-light leading-snug text-[#e3d9ce] mb-6 md:mb-8">
-                    "O clima mudou muito, o ambiente é relaxante. O foco vem
-                    fácil, até a dor de cabeça passou. Valeu cada centavo."
+                    O clima mudou muito, o ambiente é relaxante. O foco vem
+                    fácil, até a dor de cabeça passou. Valeu cada centavo.
                   </blockquote>
                   <div className="flex items-center gap-4">
                     <Avatar className="h-12 w-12 md:h-14 md:w-14 border-2 border-[#bfa086]">

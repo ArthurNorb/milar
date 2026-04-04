@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpRight } from "lucide-react";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { supabase } from "@/lib/supabase";
 
 export const metadata: Metadata = {
   title: "Portfólio | Milar Arquitetura",
@@ -12,7 +12,6 @@ export const metadata: Metadata = {
 };
 
 export default async function PortfolioPage() {
-  const supabase = await getSupabaseServerClient();
   const { data: projects, error } = await supabase
     .from("projects")
     .select("*")
