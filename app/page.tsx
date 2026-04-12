@@ -123,9 +123,13 @@ export default async function HomePage() {
               <div className="md:sticky md:top-32 relative aspect-3/4 w-[80%] md:w-full max-w-md mx-auto group">
                 <div className="absolute inset-0 bg-[#756d47] rounded-b-full -rotate-6 transition-transform group-hover:rotate-0 duration-500" />
                 <div className="relative h-full w-full rounded-b-full overflow-hidden bg-[#a39f86] z-10 border-[6px] md:border-8 border-[#e3d9ce]">
-                  <div className="w-full h-full flex items-center justify-center text-[#2e3d30]/50 font-['Spartan'] text-xs md:text-sm tracking-widest uppercase">
-                    Foto Giovanna Lima
-                  </div>
+                  <Image
+                    src="/gi.png"
+                    alt="Giovanna Lima"
+                    fill
+                    sizes="(max-width: 768px) 80vw, 448px"
+                    className="object-cover object-center"
+                  />
                 </div>
                 <Image
                   src="/estampas/Contorno Micro 01.png"

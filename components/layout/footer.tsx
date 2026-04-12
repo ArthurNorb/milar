@@ -125,7 +125,7 @@ export function Footer() {
                 alt="WebLito.tech"
                 width={120}
                 height={40}
-                style={{ height: "auto" }}
+                style={{ width: "auto", height: "auto" }}
                 className="opacity-40 transition-all duration-300 hover:opacity-100 hover:scale-105"
               />
             </a>
