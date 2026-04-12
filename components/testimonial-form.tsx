@@ -134,7 +134,7 @@ export default function TestimonialForm() {
             required
             maxLength={500}
             placeholder="Conte como o projeto desenhado pela Milar mudou a sua rotina e o seu bem-estar..."
-            className="bg-[#bfa086]/5 border border-[#bfa086]/20 rounded-2xl px-4 py-4 text-base text-[#2e3d30] placeholder:text-[#756d47]/40 focus-visible:ring-1 focus-visible:ring-[#87381e] focus-visible:border-[#87381e] min-h-[140px] resize-none transition-all shadow-inner"
+            className="bg-[#bfa086]/5 border border-[#bfa086]/20 rounded-2xl px-4 py-4 text-base text-[#2e3d30] placeholder:text-[#756d47]/40 focus-visible:ring-1 focus-visible:ring-[#87381e] focus-visible:border-[#87381e] min-h-35 resize-none transition-all shadow-inner"
           />
         </div>
       </div>

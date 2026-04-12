@@ -46,7 +46,6 @@ export function Footer() {
               {[
                 { name: "Início", path: "/" },
                 { name: "Portfólio", path: "/portfolio" },
-                { name: "Currículo", path: "/curriculum" },
                 { name: "Simulação", path: "/simulador" },
               ].map((link) => (
                 <Link

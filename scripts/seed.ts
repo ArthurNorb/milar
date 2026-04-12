@@ -30,80 +30,6 @@ async function seedProjects() {
   }
 }
 
-async function seedCurriculum() {
-  const curriculumItems = [
-    // Education
-    {
-      type: 'education',
-      title: 'UFOP - Universidade Federal de Ouro Preto',
-      description: 'Bacharelado em Arquitetura e Urbanismo',
-      start_year: 2016,
-      end_year: 2021,
-    },
-    {
-      type: 'education',
-      title: 'IPOG - Instituto de Pós-Graduação e Graduação',
-      description: 'Gestão da Qualidade e Master em Neuroarquitetura',
-      start_year: 2023,
-      end_year: 2024,
-    },
-    // Experience
-    {
-      type: 'experience',
-      title: 'Milar Arquitetura',
-      description: 'Arquiteta Autônoma',
-      start_year: 2021,
-      end_year: null, // ongoing
-    },
-    {
-      type: 'experience',
-      title: 'Atmos Construtora',
-      description: 'Arquiteta',
-      start_year: 2025,
-      end_year: 2025,
-    },
-    {
-      type: 'experience',
-      title: 'Leroy Merlin',
-      description: 'Arquiteta',
-      start_year: 2022,
-      end_year: 2025,
-    },
-    // Skills (as individual items)
-    ...[
-      'AutoCAD',
-      'Sketchup',
-      'Archicad',
-      'Enscape',
-      'Pacote Adobe',
-      'Revit',
-      'Lumion',
-      'Project Management',
-      'Neurociência Aplicada',
-      'Design de Interiores',
-    ].map(skill => ({
-      type: 'skill' as const,
-      title: skill,
-      description: null,
-      start_year: null,
-      end_year: null,
-    })),
-  ]
-
-  for (const item of curriculumItems) {
-    const { data, error } = await supabase
-      .from('curriculum')
-      .insert(item)
-      .select()
-
-    if (error) {
-      console.error(`Error inserting curriculum item ${item.title}:`, error)
-    } else {
-      console.log(`Inserted curriculum item: ${item.title}`)
-    }
-  }
-}
-
 async function seedTestimonials() {
   const testimonials = [
     {
@@ -136,7 +62,6 @@ async function main() {
   console.log('Starting seed...')
 
   await seedProjects()
-  await seedCurriculum()
   await seedTestimonials()
 
   console.log('Seed completed!')
