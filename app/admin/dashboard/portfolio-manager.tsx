@@ -324,6 +324,7 @@ export default function PortfolioManager() {
                       src={previewUrl}
                       alt="Preview"
                       fill
+                      sizes="(max-width: 1024px) 100vw, 42vw"
                       className="object-cover transition-transform group-hover:scale-105"
                     />
                     <button
@@ -448,6 +449,7 @@ export default function PortfolioManager() {
                     src={project.image_url}
                     alt={project.title}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4 backdrop-blur-sm">

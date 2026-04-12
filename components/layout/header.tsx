@@ -17,6 +17,8 @@ export function Header() {
             alt="Símbolo Milar"
             width={110}
             height={110}
+            loading="eager"
+            style={{ width: "auto", height: "auto" }}
             className="hover:scale-105 transition-all duration-300"
           />
         </Link>

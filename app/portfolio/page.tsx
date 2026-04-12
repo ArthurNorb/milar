@@ -30,7 +30,8 @@ export default async function PortfolioPage() {
           src="/estampas/Contorno Macro 06.png"
           alt="Textura de fundo"
           fill
-          className="object-cover" 
+          sizes="100vw"
+          className="object-cover"
           priority
         />
       </div>
@@ -74,6 +75,7 @@ export default async function PortfolioPage() {
                   src={project.image_url}
                   alt={project.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover transition-transform duration-1000 group-hover:scale-110"
                 />
 
@@ -82,6 +84,7 @@ export default async function PortfolioPage() {
                     src="/estampas/Contorno Micro 04.png"
                     alt=""
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover scale-150 rotate-12"
                   />
                 </div>

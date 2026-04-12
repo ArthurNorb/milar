@@ -41,6 +41,7 @@ export default async function HomePage() {
             src="/estampas/Preenchida Macro 01.png"
             alt="Textura Orgânica"
             fill
+            loading="eager"
             className="object-cover animate-[pulse_10s_ease-in-out_infinite]"
           />
         </div>
@@ -72,6 +73,7 @@ export default async function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 pt-4 md:pt-6 w-full sm:w-auto">
               <Button
                 render={<Link href="/simulador" />}
+                nativeButton={false}
                 size="lg"
                 className="w-full sm:w-auto px-8 h-14 bg-[#c3532e] hover:bg-[#c3532e]/80 text-[#e3d9ce] font-['Spartan'] text-xs tracking-wider uppercase rounded-full transition-transform hover:scale-105 duration-300 flex items-center justify-center shadow-lg"
               >
@@ -79,6 +81,7 @@ export default async function HomePage() {
               </Button>
               <Button
                 render={<Link href="/portfolio" />}
+                nativeButton={false}
                 variant="outline"
                 size="lg"
                 className="w-full sm:w-auto px-8 h-14 border-[#bfa086] text-[#bfa086] hover:bg-[#bfa086] hover:text-[#2e3d30] font-['Spartan'] text-xs tracking-wider uppercase rounded-full transition-all duration-300 flex items-center justify-center gap-2 bg-transparent"
@@ -95,6 +98,7 @@ export default async function HomePage() {
                 src="/hero.png"
                 alt="Projeto Milar"
                 fill
+                sizes="(max-width: 1024px) 100vw, 42vw"
                 className="object-cover object-center transition-transform duration-1000 group-hover:scale-110"
                 priority
               />
@@ -162,11 +166,12 @@ export default async function HomePage() {
 
               <div className="pt-2 md:pt-4">
                 <Button
-                  render={<Link href="/curriculum" />}
+                  render={<Link href="/portfolio" />}
+                  nativeButton={false}
                   variant="ghost"
                   className="p-0 hover:bg-transparent text-[#87381e] hover:text-[#2e3d30] font-['Spartan'] text-[10px] md:text-sm tracking-widest uppercase transition-colors group flex items-center gap-3 w-fit"
                 >
-                  Conheça minha trajetória
+                  Conheça nossos projetos
                   <span className="w-8 md:w-10 h-px bg-[#87381e] group-hover:w-16 transition-all duration-300"></span>
                 </Button>
               </div>

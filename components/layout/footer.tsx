@@ -24,6 +24,7 @@ export function Footer() {
                 alt="Milar Arquitetura"
                 width={170}
                 height={170}
+                style={{ width: "auto", height: "auto" }}
               />
             </div>
             <p className="text-[#e3d9ce]/70 text-base max-w-sm font-light leading-relaxed">
@@ -124,6 +125,7 @@ export function Footer() {
                 alt="WebLito.tech"
                 width={120}
                 height={40}
+                style={{ height: "auto" }}
                 className="opacity-40 transition-all duration-300 hover:opacity-100 hover:scale-105"
               />
             </a>

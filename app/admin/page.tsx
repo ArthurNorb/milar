@@ -68,6 +68,7 @@ export default function AdminLoginPage() {
                 alt="Milar Logo"
                 width={32}
                 height={32}
+                style={{ width: "auto", height: "auto" }}
                 className="brightness-0 invert opacity-90"
               />
             </div>
