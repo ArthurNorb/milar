@@ -3,9 +3,9 @@ import { ReactNode } from "react";
 import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "Simulação de Projeto | Milar Arquitetura",
+  title: "Quero um Projeto | Milar Arquitetura",
   description:
-    "Dê o primeiro passo. Descubra o investimento para transformar seu ambiente com a aplicação da neuroarquitetura.",
+    "Conte sobre você, seu imóvel e o projeto dos seus sonhos. A Giovanna entrará em contato em até 48h com uma proposta personalizada.",
 };
 
 export default function SimulatorLayout({ children }: { children: ReactNode }) {
@@ -29,14 +29,14 @@ export default function SimulatorLayout({ children }: { children: ReactNode }) {
       <div className="w-full max-w-3xl mx-auto flex-1 flex flex-col relative z-10">
         <div className="flex flex-col items-center text-center mb-10 md:mb-16 space-y-4">
           <span className="font-['Spartan'] text-[10px] md:text-xs uppercase tracking-[0.3em] text-[#87381e] font-semibold">
-            Orçamento Inteligente
+            Solicitação de Projeto
           </span>
           <h1 className="text-4xl md:text-5xl font-serif text-[#2e3d30] leading-tight">
-            Vamos desenhar <br className="hidden md:block" />o seu novo refúgio?
+            Vamos começar <br className="hidden md:block" />seu projeto?
           </h1>
           <p className="text-[#756d47] font-light text-sm md:text-base max-w-md mx-auto pt-2">
-            Responda algumas perguntas rápidas para entendermos a sua
-            necessidade e calcularmos uma estimativa para o seu projeto.
+            Conte sobre você, seu imóvel e o projeto dos seus sonhos.
+            A Giovanna entrará em contato em até 48h com uma proposta personalizada.
           </p>
         </div>
 

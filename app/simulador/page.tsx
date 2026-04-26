@@ -12,6 +12,19 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
+import { MultiSelectChips } from "@/components/ui/multi-select-chips";
+import { FileUpload } from "@/components/ui/file-upload";
+import { AmbientesSelector } from "./_components/ambientes-selector";
+import { Stepper } from "@/components/ui/stepper";
+import {
+  RadioGroup,
+  RadioGroupHorizontal,
+  RadioItem,
+  RadioItemCompact,
+} from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -19,365 +32,654 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
-import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, CheckCircle, AlertCircle, Plus } from "lucide-react";
+import { StyleMatrix } from "./_components/style-matrix";
+import { ImportanceRank } from "./_components/importance-rank";
+import { ReviewSection } from "./_components/review-section";
+import {
+  OrcamentoFormData,
+  ORCAMENTO_FORM_INITIAL,
+} from "@/lib/orcamento-types";
 
-type Step = "auth" | "property" | "rooms" | "needs" | "confirm" | "success";
+type Step =
+  | "identification"
+  | "scope"
+  | "preferences"
+  | "subjective"
+  | "final"
+  | "review"
+  | "success";
 
-export default function SimulatorPage() {
-  const [step, setStep] = useState<Step>("auth");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+const STEPS = [
+  { key: "identification", label: "Contato" },
+  { key: "scope", label: "Escopo" },
+  { key: "preferences", label: "Estilo" },
+  { key: "subjective", label: "Subjetivas" },
+  { key: "final", label: "Finalizar" },
+];
+
+const AMBIENTES = [
+  "Quarto", "Banheiro", "Lavabo", "Cozinha", "Sala", "Varanda",
+  "Área serviço", "Despensa", "Área externa", "Corredor",
+  "Escritório", "Closet", "Garagem",
+];
+
+const AMBIENTES_PRIORITARIOS = [
+  "Sala Estar/TV", "Cozinha Integrada", "Lavanderia", "Escritório",
+  "Área Gourmet", "Piscina", "Suíte Master", "Quartos Hóspedes",
+  "Garagem", "Outros",
+];
+
+const INVESTIMENTOS = [
+  "Abaixo de 50 mil",
+  "50 a 100 mil",
+  "100 a 300 mil",
+  "300 a 500 mil",
+  "500 mil a 1 milhão",
+  "Acima de 1 milhão",
+  "Não tenho estimativa",
+];
+
+const CORES = ["Neutros", "Vibrantes", "Terrosos", "Frias", "Sem preferência"];
+
+const UPLOAD_TEMP_ID = `tmp-${Date.now()}`;
+
+// Helpers
+function formatPhone(raw: string) {
+  const d = raw.replace(/\D/g, "").slice(0, 11);
+  if (!d.length) return "";
+  if (d.length <= 2) return `(${d}`;
+  if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+export default function SimuladorPage() {
+  const [step, setStep] = useState<Step>("identification");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState<OrcamentoFormData>(ORCAMENTO_FORM_INITIAL);
+  const [uploadId] = useState(UPLOAD_TEMP_ID);
 
-  // Form state
-  interface FormData {
-    email: string;
-    name: string;
-    propertyType: string;
-    area: string;
-    rooms: string[];
-    needs: string;
-  }
-  const [form, setForm] = useState<FormData>({
-    email: "",
-    name: "",
-    propertyType: "",
-    area: "",
-    rooms: [],
-    needs: "",
-  });
+  // local state para inputs auxiliares
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [novoAmbiente, setNovoAmbiente] = useState("");
 
-  const roomOptions = [
-    "Sala de estar",
-    "Cozinha",
-    "Quarto principal",
-    "Quarto infantil",
-    "Banheiro",
-    "Escritório",
-    "Área externa",
-    "Lavanderia",
-  ];
+  const patch = (partial: Partial<OrcamentoFormData>) =>
+    setForm((prev) => ({ ...prev, ...partial }));
+
+  const isReviewOrSuccess = step === "review" || step === "success";
+
+  const phoneDigits = form.telefone.replace(/\D/g, "");
+  const emailOk = isValidEmail(form.email);
+  const phoneOk = phoneDigits.length === 11;
+
+  const canAdvance = (): boolean => {
+    if (step === "identification")
+      return !!(form.nome && emailOk && phoneOk && form.tipoProjeto && form.tipoImovel);
+    if (step === "scope")
+      return !!(form.descricaoEscopo.length >= 30 && form.investimento && form.moradoresQuantidade);
+    if (step === "preferences") return true;
+    if (step === "subjective")
+      return !!(
+        form.subjetivaSabado &&
+        form.subjetivaComodo &&
+        form.subjetivaEstiloVida &&
+        form.subjetivaRestricoes &&
+        form.subjetivaMotivacao &&
+        form.prazoData
+      );
+    if (step === "final") return form.aceiteMinimo && form.aceiteLgpd;
+    return true;
+  };
 
   const handleNext = async () => {
     setError(null);
-    if (step === "auth") {
-      // Mock authentication
-      setLoading(true);
-      setTimeout(() => {
-        setIsAuthenticated(true);
-        setLoading(false);
-        setStep("property");
-      }, 800);
-    } else if (step === "property") {
-      setStep("rooms");
-    } else if (step === "rooms") {
-      setStep("needs");
-    } else if (step === "needs") {
-      setStep("confirm");
-    } else if (step === "confirm") {
-      setLoading(true);
-      try {
-        const response = await fetch("/api/simulacao", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || "Erro ao enviar simulação");
-        }
-        setLoading(false);
-        setStep("success");
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Erro desconhecido");
-        setLoading(false);
-      }
-    }
+    if (step === "identification") setStep("scope");
+    else if (step === "scope") setStep("preferences");
+    else if (step === "preferences") setStep("subjective");
+    else if (step === "subjective") setStep("final");
+    else if (step === "final") setStep("review");
+    else if (step === "review") await handleSubmit();
   };
 
   const handleBack = () => {
-    if (step === "property") setStep("auth");
-    else if (step === "rooms") setStep("property");
-    else if (step === "needs") setStep("rooms");
-    else if (step === "confirm") setStep("needs");
+    if (step === "scope") setStep("identification");
+    else if (step === "preferences") setStep("scope");
+    else if (step === "subjective") setStep("preferences");
+    else if (step === "final") setStep("subjective");
+    else if (step === "review") setStep("final");
   };
 
-  const progress = {
-    auth: 10,
-    property: 30,
-    rooms: 50,
-    needs: 70,
-    confirm: 90,
-    success: 100,
-  }[step];
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/simulacao", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, uploadId }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Erro ao enviar solicitação");
+      setStep("success");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro desconhecido");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Ages dinâmicas por morador
+  const qtdMoradores = parseInt(form.moradoresQuantidade) || 0;
+  const ages = form.moradoresIdades
+    ? form.moradoresIdades.split(",").map((s) => s.trim())
+    : [];
+  const setAge = (i: number, val: string) => {
+    const next = [...ages];
+    next[i] = val.replace(/\D/g, "").slice(0, 3);
+    patch({ moradoresIdades: next.join(", ") });
+  };
+
+  // Adicionar ambiente customizado
+  const addNovoAmbiente = () => {
+    const nome = novoAmbiente.trim();
+    if (!nome || form.ambientes.some((a) => a.nome === nome)) return;
+    patch({ ambientes: [...form.ambientes, { nome, quantidade: 1 }] });
+    setNovoAmbiente("");
+  };
+
+  const stepTitle: Record<Step, string> = {
+    identification: "Contato e Imóvel",
+    scope: "Escopo e Investimento",
+    preferences: "Preferências e Estilo",
+    subjective: "Subjetivas e Prazos",
+    final: "Finalização",
+    review: "Revise as informações",
+    success: "Tudo pronto!",
+  };
+
+  const stepDescription: Record<Step, string> = {
+    identification: "Vamos nos conhecer e entender sobre o imóvel.",
+    scope: "Detalhes sobre os ambientes, escopo e investimento.",
+    preferences: "Suas preferências de estilo, cores e referências.",
+    subjective: "Perguntas sobre sua vida e expectativas para o projeto.",
+    final: "Último passo antes de enviar para a Giovanna.",
+    review: "Verifique tudo antes de enviar sua solicitação.",
+    success: "Sua solicitação foi enviada com sucesso!",
+  };
 
   return (
     <div className="w-full flex flex-col animate-in fade-in duration-700">
-      {/* Progress Bar Simplificada e Elegante */}
-      <div className="mb-8 md:mb-12">
-        <Progress value={progress} className="w-full" />
-        <div className="flex justify-between mt-3 px-1">
-          <span
-            className={`text-[8px] sm:text-[10px] font-['Spartan'] uppercase tracking-widest ${step === "auth" ? "text-[#87381e] font-semibold" : "text-[#756d47]"}`}
-          >
-            Início
-          </span>
-          <span
-            className={`text-[8px] sm:text-[10px] font-['Spartan'] uppercase tracking-widest ${step === "rooms" ? "text-[#87381e] font-semibold" : "text-[#756d47]"}`}
-          >
-            Ambientes
-          </span>
-          <span
-            className={`text-[8px] sm:text-[10px] font-['Spartan'] uppercase tracking-widest ${step === "confirm" ? "text-[#87381e] font-semibold" : "text-[#756d47]"}`}
-          >
-            Revisão
-          </span>
+      {!isReviewOrSuccess && (
+        <div className="mb-8 md:mb-12">
+          <Stepper steps={STEPS} currentStep={step} />
         </div>
-      </div>
+      )}
 
-      {/* Step Content */}
       <Card className="border-none shadow-2xl bg-[#e3d9ce]/95 backdrop-blur-md">
         <CardHeader className="pb-4 border-b border-[#bfa086]/20">
-          <CardTitle>
-            {step === "auth" && "Vamos nos conhecer?"}
-            {step === "property" && "Sobre o seu espaço"}
-            {step === "rooms" && "Quais ambientes vamos transformar?"}
-            {step === "needs" && "Qual é o seu objetivo?"}
-            {step === "confirm" && "Revise as informações"}
-            {step === "success" && "Tudo pronto!"}
-          </CardTitle>
-          <CardDescription>
-            {step === "auth" &&
-              "Precisamos dos seus dados básicos para salvar a sua simulação."}
-            {step === "property" &&
-              "Conte-nos os detalhes físicos da sua propriedade."}
-            {step === "rooms" &&
-              "Selecione todos os cômodos que farão parte do projeto."}
-            {step === "needs" &&
-              "Descreva como você quer se sentir no seu novo refúgio."}
-            {step === "confirm" &&
-              "Verifique se os dados estão corretos antes de enviar para análise."}
-            {step === "success" &&
-              "Sua simulação foi enviada com sucesso para a nossa equipe."}
-          </CardDescription>
+          <CardTitle>{stepTitle[step]}</CardTitle>
+          <CardDescription>{stepDescription[step]}</CardDescription>
         </CardHeader>
 
         <CardContent className="pt-8">
-          {step === "auth" && (
+          {/* ── Step 1: Identificação ── */}
+          {step === "identification" && (
             <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-500">
-              <div className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Como podemos te chamar? *</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="nome">Nome completo *</Label>
                   <Input
-                    id="name"
+                    id="nome"
                     placeholder="Seu nome completo"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    value={form.nome}
+                    onChange={(e) => patch({ nome: e.target.value })}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="email">Seu melhor e-mail *</Label>
+                  <Label htmlFor="email">Email *</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="exemplo@email.com"
+                    placeholder="seu@email.com"
                     value={form.email}
-                    onChange={(e) =>
-                      setForm({ ...form, email: e.target.value })
-                    }
+                    aria-invalid={emailTouched && !emailOk}
+                    onBlur={() => setEmailTouched(true)}
+                    onChange={(e) => patch({ email: e.target.value })}
                   />
+                  {emailTouched && !emailOk && form.email.length > 0 && (
+                    <p className="text-[10px] text-[#87381e] font-['Spartan'] uppercase tracking-widest">
+                      Email inválido
+                    </p>
+                  )}
                 </div>
-              </div>
-              <p className="font-['Spartan'] text-[10px] uppercase tracking-widest text-[#756d47] pt-2">
-                Seus dados estão seguros. Ao continuar, você concorda com nossos
-                termos.
-              </p>
-            </div>
-          )}
 
-          {step === "property" && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-500">
-              <div className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="propertyType">Tipo de imóvel *</Label>
-                  <Select
-                    value={form.propertyType ?? ""} // Garante que se for null, passe uma string vazia
-                    onValueChange={
-                      (value) => setForm({ ...form, propertyType: value ?? "" }) // Garante que o estado receba string
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo de propriedade" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Casa">Casa</SelectItem>
-                      <SelectItem value="Apartamento">Apartamento</SelectItem>
-                      <SelectItem value="Comercial">
-                        Espaço Comercial
-                      </SelectItem>
-                      <SelectItem value="Escritório">
-                        Escritório / Clínica
-                      </SelectItem>
-                      <SelectItem value="Outro">Outro</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="area">Área aproximada (m²) *</Label>
+                  <Label htmlFor="telefone">Telefone / WhatsApp *</Label>
                   <Input
-                    id="area"
-                    type="number"
-                    placeholder="Ex: 120"
-                    value={form.area}
-                    onChange={(e) => setForm({ ...form, area: e.target.value })}
+                    id="telefone"
+                    type="tel"
+                    placeholder="(31) 99999-0000"
+                    value={form.telefone}
+                    aria-invalid={phoneTouched && !phoneOk}
+                    onBlur={() => setPhoneTouched(true)}
+                    onChange={(e) => patch({ telefone: formatPhone(e.target.value) })}
                   />
+                  {phoneTouched && !phoneOk && form.telefone.length > 0 && (
+                    <p className="text-[10px] text-[#87381e] font-['Spartan'] uppercase tracking-widest">
+                      Informe DDD + 9 dígitos
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="instagram">Instagram</Label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[#756d47] select-none pointer-events-none">
+                      @
+                    </span>
+                    <Input
+                      id="instagram"
+                      placeholder="seu.perfil"
+                      value={form.instagram}
+                      className="pl-8"
+                      onChange={(e) =>
+                        patch({ instagram: e.target.value.replace(/^@+/, "") })
+                      }
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
 
-          {step === "rooms" && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-500">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {roomOptions.map((room) => (
-                  <div
-                    key={room}
-                    className={`flex items-center space-x-3 p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${form.rooms.includes(room) ? "bg-[#2e3d30]/5 border-[#2e3d30]/30" : "bg-transparent border-[#bfa086]/30 hover:border-[#bfa086]"}`}
-                    onClick={() => {
-                      if (form.rooms.includes(room)) {
-                        setForm({
-                          ...form,
-                          rooms: form.rooms.filter((r) => r !== room),
-                        });
-                      } else {
-                        setForm({ ...form, rooms: [...form.rooms, room] });
-                      }
-                    }}
-                  >
-                    <Checkbox
-                      id={room}
-                      checked={form.rooms.includes(room)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setForm({ ...form, rooms: [...form.rooms, room] });
-                        } else {
-                          setForm({
-                            ...form,
-                            rooms: form.rooms.filter((r) => r !== room),
-                          });
-                        }
-                      }}
-                    />
-                    <label
-                      htmlFor={room}
-                      className="text-sm text-[#2e3d30] font-light cursor-pointer select-none w-full"
-                    >
-                      {room}
-                    </label>
-                  </div>
-                ))}
+              <div className="space-y-3">
+                <Label>Tipo de projeto *</Label>
+                <RadioGroupHorizontal
+                  value={form.tipoProjeto}
+                  onValueChange={(v) =>
+                    patch({ tipoProjeto: v as OrcamentoFormData["tipoProjeto"] })
+                  }
+                >
+                  <RadioItem value="Construção" label="Construção (terreno)" />
+                  <RadioItem value="Reforma" label="Reforma (com demolição / construção)" />
+                  <RadioItem value="Interiores" label="Interiores (sem demolição)" />
+                </RadioGroupHorizontal>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Tipo de imóvel *</Label>
+                <RadioGroupHorizontal
+                  value={form.tipoImovel}
+                  onValueChange={(v) =>
+                    patch({ tipoImovel: v as OrcamentoFormData["tipoImovel"] })
+                  }
+                >
+                  <RadioItem value="Residencial" label="Residencial" />
+                  <RadioItem value="Comercial" label="Comercial" />
+                  <RadioItem value="Corporativo" label="Corporativo" />
+                </RadioGroupHorizontal>
               </div>
             </div>
           )}
 
-          {step === "needs" && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-500">
+          {/* ── Step 2: Escopo ── */}
+          {step === "scope" && (
+            <div className="space-y-7 animate-in slide-in-from-right-4 fade-in duration-500">
               <div className="space-y-3">
+                <Label>Ambientes do imóvel</Label>
+                <AmbientesSelector
+                  options={[
+                    ...AMBIENTES,
+                    ...form.ambientes.filter((a) => !AMBIENTES.includes(a.nome)).map((a) => a.nome),
+                  ]}
+                  value={form.ambientes}
+                  onChange={(v) => patch({ ambientes: v })}
+                />
+                {/* Adicionar ambiente customizado */}
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    placeholder="Outro ambiente..."
+                    value={novoAmbiente}
+                    onChange={(e) => setNovoAmbiente(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addNovoAmbiente(); } }}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addNovoAmbiente}
+                    disabled={!novoAmbiente.trim()}
+                    className="shrink-0 gap-1.5"
+                  >
+                    <Plus className="h-4 w-4" /> Adicionar
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Ambientes prioritários</Label>
+                <MultiSelectChips
+                  options={AMBIENTES_PRIORITARIOS}
+                  value={form.ambientesPrioritarios}
+                  onChange={(v) => patch({ ambientesPrioritarios: v })}
+                />
+                {form.ambientesPrioritarios.includes("Outros") && (
+                  <Input
+                    placeholder="Especifique os outros ambientes prioritários"
+                    value={form.outrosPrioritarios}
+                    onChange={(e) => patch({ outrosPrioritarios: e.target.value })}
+                  />
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="escopo">Descreva o escopo do projeto em detalhes *</Label>
                 <Textarea
-                  id="needs"
-                  placeholder="Ex: Quero uma sala de estar bem iluminada que passe tranquilidade depois do trabalho. Preciso de um quarto infantil focado na autonomia da criança..."
-                  value={form.needs}
-                  onChange={(e) => setForm({ ...form, needs: e.target.value })}
+                  id="escopo"
+                  placeholder="Ex: Construção nova de 200m², reforma da cozinha e sala, integração dos ambientes..."
+                  value={form.descricaoEscopo}
+                  onChange={(e) => patch({ descricaoEscopo: e.target.value })}
+                />
+                {form.descricaoEscopo.length > 0 && form.descricaoEscopo.length < 30 && (
+                  <p className="text-[10px] font-['Spartan'] uppercase tracking-widest text-[#87381e]">
+                    Mínimo de 30 caracteres ({form.descricaoEscopo.length}/30)
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Faixa de investimento *</Label>
+                <Select
+                  value={form.investimento}
+                  onValueChange={(v) => patch({ investimento: v ?? "" })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma faixa" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INVESTIMENTOS.map((inv) => (
+                      <SelectItem key={inv} value={inv}>{inv}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Moradores com input individual por pessoa */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="moradores">Quantas pessoas vão morar / usar o espaço? *</Label>
+                  <Input
+                    id="moradores"
+                    type="number"
+                    min={1}
+                    max={20}
+                    placeholder="Ex: 3"
+                    value={form.moradoresQuantidade}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "");
+                      patch({ moradoresQuantidade: val, moradoresIdades: "" });
+                    }}
+                  />
+                </div>
+
+                {qtdMoradores > 0 && (
+                  <div className="space-y-2 animate-in fade-in duration-300">
+                    <Label>Idade de cada morador</Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {Array.from({ length: qtdMoradores }).map((_, i) => (
+                        <div key={i} className="space-y-1">
+                          <p className="text-[9px] font-['Spartan'] uppercase tracking-widest text-[#756d47]">
+                            Morador {i + 1}
+                          </p>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={120}
+                            placeholder="Idade"
+                            value={ages[i] ?? ""}
+                            onChange={(e) => setAge(i, e.target.value)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 3: Preferências ── */}
+          {step === "preferences" && (
+            <div className="space-y-8 animate-in slide-in-from-right-4 fade-in duration-500">
+              <div className="space-y-4">
+                <Label>Nível de importância (1 = Menos, 3 = Mais)</Label>
+                <ImportanceRank
+                  value={form.importancia}
+                  onChange={(v) => patch({ importancia: v })}
+                />
+                {form.importancia.auxilioCondicaoFisica >= 2 && (
+                  <div className="space-y-2 mt-4 animate-in fade-in duration-300">
+                    <Label htmlFor="condicao">Conte mais sobre essa condição</Label>
+                    <Textarea
+                      id="condicao"
+                      placeholder="Descreva a condição física ou psicológica que o projeto deve considerar..."
+                      value={form.condicaoEspecial}
+                      onChange={(e) => patch({ condicaoEspecial: e.target.value })}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <Label>Cores preferidas</Label>
+                <RadioGroup
+                  value={form.corPreferida}
+                  onValueChange={(v) => patch({ corPreferida: v })}
+                  className="flex flex-row flex-wrap gap-3"
+                >
+                  {CORES.map((cor) => (
+                    <RadioItemCompact key={cor} value={cor} label={cor} />
+                  ))}
+                </RadioGroup>
+              </div>
+
+              <div className="space-y-4">
+                <Label>Estilos arquitetônicos</Label>
+                <p className="text-xs text-[#756d47] font-light -mt-1">
+                  Avalie cada estilo conforme sua afinidade.
+                </p>
+                <StyleMatrix
+                  value={form.estilos}
+                  onChange={(v) => patch({ estilos: v })}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label>
+                  Sustentabilidade / Eficiência Energética{" "}
+                  <span className="text-[#87381e]">{form.sustentabilidade}/10</span>
+                </Label>
+                <Slider
+                  value={form.sustentabilidade}
+                  onChange={(v) => patch({ sustentabilidade: v })}
+                  min={1}
+                  max={10}
+                  minLabel="Não é prioridade"
+                  maxLabel="Fundamental"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label>Referências visuais</Label>
+                <p className="text-xs text-[#756d47] font-light">
+                  Envie imagens, fotos ou PDFs que inspiram seu projeto.
+                </p>
+                <FileUpload
+                  solicitacaoId={uploadId}
+                  value={form.referencias}
+                  onChange={(v) => patch({ referencias: v })}
+                  maxFiles={5}
+                  maxSizeMB={5}
                 />
               </div>
             </div>
           )}
 
-          {step === "confirm" && (
+          {/* ── Step 4: Subjetivas ── */}
+          {step === "subjective" && (
+            <div className="space-y-7 animate-in slide-in-from-right-4 fade-in duration-500">
+              <div className="space-y-2">
+                <Label htmlFor="sabado">Como seria um sábado perfeito no ambiente novo? *</Label>
+                <Textarea
+                  id="sabado"
+                  placeholder="Descreva como você imagina esse dia ideal..."
+                  value={form.subjetivaSabado}
+                  onChange={(e) => patch({ subjetivaSabado: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="comodo">Qual seu cômodo preferido na casa atual e por quê? *</Label>
+                <Textarea
+                  id="comodo"
+                  placeholder="Me fale sobre esse espaço..."
+                  value={form.subjetivaComodo}
+                  onChange={(e) => patch({ subjetivaComodo: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="estilo-vida">Descreva seu estilo de vida e uso do espaço *</Label>
+                <Textarea
+                  id="estilo-vida"
+                  placeholder="Ex: receber amigos aos fins de semana, home office diário, filhos pequenos..."
+                  value={form.subjetivaEstiloVida}
+                  onChange={(e) => patch({ subjetivaEstiloVida: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="restricoes">Há restrições ou desafios do terreno/imóvel? *</Label>
+                <Textarea
+                  id="restricoes"
+                  placeholder="Ex: pé direito baixo, inclinação do terreno, vizinhança..."
+                  value={form.subjetivaRestricoes}
+                  onChange={(e) => patch({ subjetivaRestricoes: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="motivacao">Por que decidiu buscar esse serviço agora? *</Label>
+                <Textarea
+                  id="motivacao"
+                  placeholder="O que motivou você nesse momento..."
+                  value={form.subjetivaMotivacao}
+                  onChange={(e) => patch({ subjetivaMotivacao: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
+                <div className="space-y-2">
+                  <Label htmlFor="prazo">Data ideal de conclusão *</Label>
+                  <Input
+                    id="prazo"
+                    type="date"
+                    value={form.prazoData}
+                    min={new Date().toISOString().split("T")[0]}
+                    onChange={(e) => patch({ prazoData: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label>
+                    Flexibilidade de prazo:{" "}
+                    <span className="text-[#87381e]">{form.prazoFlexibilidade}/5</span>
+                  </Label>
+                  <Slider
+                    value={form.prazoFlexibilidade}
+                    onChange={(v) => patch({ prazoFlexibilidade: v })}
+                    min={1}
+                    max={5}
+                    minLabel="Inegociável"
+                    maxLabel="Muito flexível"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 5: Finalização ── */}
+          {step === "final" && (
             <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-500">
-              <div className="rounded-3xl border border-[#bfa086]/40 bg-[#bfa086]/5 p-6 md:p-8 space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <p className="font-['Spartan'] text-[10px] uppercase tracking-widest text-[#87381e] mb-1">
-                      Cliente
-                    </p>
-                    <p className="font-light text-[#2e3d30] text-lg">
-                      {form.name || "Não informado"}
-                    </p>
-                    <p className="font-light text-[#756d47] text-sm">
-                      {form.email || "Não informado"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="font-['Spartan'] text-[10px] uppercase tracking-widest text-[#87381e] mb-1">
-                      Propriedade
-                    </p>
-                    <p className="font-light text-[#2e3d30] text-lg">
-                      {form.propertyType || "Não informado"}
-                    </p>
-                    <p className="font-light text-[#756d47] text-sm">
-                      {form.area ? `${form.area} m²` : "Área não informada"}
-                    </p>
-                  </div>
+              <div className="rounded-2xl border border-[#bfa086]/30 bg-[#bfa086]/10 p-6 space-y-5">
+                <div
+                  className="flex items-start gap-4 cursor-pointer"
+                  onClick={() => patch({ aceiteMinimo: !form.aceiteMinimo })}
+                >
+                  <Checkbox
+                    id="aceite-minimo"
+                    checked={form.aceiteMinimo}
+                    onCheckedChange={(v) => patch({ aceiteMinimo: !!v })}
+                    className="mt-0.5"
+                  />
+                  <label
+                    htmlFor="aceite-minimo"
+                    className="text-sm text-[#2e3d30] font-light leading-relaxed cursor-pointer"
+                  >
+                    Estou ciente de que o projeto completo da{" "}
+                    <span className="font-medium">Milar Arquitetura</span> tem valor mínimo de{" "}
+                    <span className="font-medium text-[#87381e]">R$ 10.000,00</span>{" "}
+                    e tenho interesse em saber mais.
+                  </label>
                 </div>
 
-                <div className="pt-4 border-t border-[#bfa086]/20">
-                  <p className="font-['Spartan'] text-[10px] uppercase tracking-widest text-[#87381e] mb-2">
-                    Ambientes Selecionados
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {form.rooms.length ? (
-                      form.rooms.map((room) => (
-                        <span
-                          key={room}
-                          className="px-3 py-1 bg-[#2e3d30] text-[#e3d9ce] rounded-full text-xs font-light"
-                        >
-                          {room}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-[#756d47] font-light text-sm">
-                        Nenhum ambiente selecionado
-                      </span>
-                    )}
-                  </div>
+                <div
+                  className="flex items-start gap-4 cursor-pointer"
+                  onClick={() => patch({ aceiteLgpd: !form.aceiteLgpd })}
+                >
+                  <Checkbox
+                    id="aceite-lgpd"
+                    checked={form.aceiteLgpd}
+                    onCheckedChange={(v) => patch({ aceiteLgpd: !!v })}
+                    className="mt-0.5"
+                  />
+                  <label
+                    htmlFor="aceite-lgpd"
+                    className="text-sm text-[#2e3d30] font-light leading-relaxed cursor-pointer"
+                  >
+                    Concordo com o uso dos meus dados para contato sobre meu projeto, conforme a LGPD.
+                  </label>
                 </div>
-
-                {form.needs && (
-                  <div className="pt-4 border-t border-[#bfa086]/20">
-                    <p className="font-['Spartan'] text-[10px] uppercase tracking-widest text-[#87381e] mb-2">
-                      Expectativas
-                    </p>
-                    <p className="font-light text-[#2e3d30] text-sm leading-relaxed italic">
-                      "{form.needs}"
-                    </p>
-                  </div>
-                )}
               </div>
 
               <p className="text-center font-['Spartan'] text-[10px] uppercase tracking-widest text-[#756d47]">
-                Sua simulação será analisada por Giovanna Lima.
+                Ao clicar em "Continuar", você revisará suas respostas antes do envio final.
               </p>
             </div>
           )}
 
+          {/* ── Step 6: Revisão ── */}
+          {step === "review" && (
+            <ReviewSection form={form} onEdit={(s) => setStep(s as Step)} />
+          )}
+
+          {/* ── Step 7: Sucesso ── */}
           {step === "success" && (
             <div className="text-center py-12 md:py-16 animate-in zoom-in-95 duration-500">
               <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-[#87381e]/10 mb-8">
                 <CheckCircle className="h-12 w-12 text-[#87381e]" />
               </div>
               <h3 className="text-3xl md:text-4xl font-serif text-[#2e3d30] leading-tight mb-6">
-                Informações <br className="sm:hidden" /> recebidas!
+                Solicitação <br className="sm:hidden" /> enviada!
               </h3>
               <p className="text-base text-[#756d47] font-light max-w-sm mx-auto leading-relaxed mb-10">
-                Agradecemos a confiança. Nossa equipe analisará os detalhes do
-                seu refúgio e entrará em contato em até 48 horas.
+                A Giovanna recebeu todas as suas respostas e entrará em contato em até 48 horas
+                com uma proposta personalizada.
               </p>
-
               <Button render={<Link href="/" />} className="w-full sm:w-auto">
                 Voltar para a página inicial
               </Button>
@@ -391,34 +693,28 @@ export default function SimulatorPage() {
             </Alert>
           )}
 
-          {/* Navigation */}
           {step !== "success" && (
             <div className="flex flex-col-reverse sm:flex-row justify-between mt-10 pt-6 border-t border-[#bfa086]/20 gap-4">
               <Button
                 variant="ghost"
                 onClick={handleBack}
-                disabled={step === "auth" || loading}
-                className={`w-full sm:w-auto ${step === "auth" ? "opacity-0 pointer-events-none" : ""}`}
+                disabled={step === "identification" || loading}
+                className={`w-full sm:w-auto ${step === "identification" ? "opacity-0 pointer-events-none" : ""}`}
               >
                 Voltar
               </Button>
               <Button
                 onClick={handleNext}
-                disabled={
-                  (step === "auth" && (!form.email || !form.name)) ||
-                  (step === "property" && (!form.propertyType || !form.area)) ||
-                  (step === "rooms" && form.rooms.length === 0) ||
-                  loading
-                }
+                disabled={!canAdvance() || loading}
                 className="w-full sm:w-auto shadow-lg"
               >
                 {loading ? (
                   <>
                     <Loader2 className="mr-3 h-4 w-4 animate-spin" />
-                    Processando...
+                    Enviando...
                   </>
-                ) : step === "confirm" ? (
-                  "Enviar Simulação"
+                ) : step === "review" ? (
+                  "Enviar para a Giovanna"
                 ) : (
                   "Continuar"
                 )}
@@ -428,11 +724,9 @@ export default function SimulatorPage() {
         </CardContent>
       </Card>
 
-      {/* Nota de rodapé (Disclaimer) */}
       <div className="mt-8 text-center">
         <p className="font-['Spartan'] text-[9px] uppercase tracking-[0.2em] text-[#756d47]/70">
-          Esta simulação é uma etapa preliminar. <br className="md:hidden" />O
-          orçamento oficial será formalizado após contato direto.
+          Seus dados estão seguros e serão usados apenas para contato sobre seu projeto.
         </p>
       </div>
     </div>

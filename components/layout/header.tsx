@@ -42,7 +42,7 @@ export function Header() {
               href="/simulador"
               className="w-full h-full flex items-center justify-center px-6 sm:px-8 font-['Spartan'] uppercase text-[10px] sm:text-xs tracking-widest"
             >
-              Simular Orçamento
+              Quero um Projeto
             </Link>
           </Button>
         </div>

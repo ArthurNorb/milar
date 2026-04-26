@@ -47,7 +47,7 @@ export function Footer() {
               {[
                 { name: "Início", path: "/" },
                 { name: "Portfólio", path: "/portfolio" },
-                { name: "Simulação", path: "/simulador" },
+                { name: "Quero um Projeto", path: "/simulador" },
               ].map((link) => (
                 <Link
                   key={link.name}

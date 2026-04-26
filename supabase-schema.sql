@@ -59,3 +59,94 @@ CREATE POLICY "Allow public read access to project images"
 CREATE POLICY "Allow authenticated upload to project images"
   ON storage.objects FOR INSERT
   WITH CHECK (bucket_id = 'project-images' AND auth.role() = 'authenticated');
+
+-- ============================================================
+-- Orcamento Solicitacoes
+-- ============================================================
+
+-- Bucket privado para uploads de referências dos clientes
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('orcamento-uploads', 'orcamento-uploads', false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Apenas anon pode inserir (form público)
+CREATE POLICY "Allow anon upload to orcamento-uploads"
+  ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id = 'orcamento-uploads');
+
+-- Apenas service_role lê (backend gera signed URLs)
+CREATE POLICY "Allow service_role read orcamento-uploads"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'orcamento-uploads' AND auth.role() = 'service_role');
+
+-- Status enum
+CREATE TYPE orcamento_status AS ENUM ('nova', 'em_contato', 'concluida', 'descartada');
+
+-- Tabela principal
+CREATE TABLE IF NOT EXISTS orcamento_solicitacoes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  status orcamento_status DEFAULT 'nova',
+
+  -- Contato
+  nome TEXT NOT NULL,
+  email TEXT NOT NULL,
+  telefone TEXT NOT NULL,
+  instagram TEXT,
+
+  -- Imóvel
+  tipo_projeto TEXT NOT NULL,
+  tipo_imovel TEXT NOT NULL,
+
+  -- Escopo
+  ambientes JSONB DEFAULT '[]',
+  ambientes_prioritarios JSONB DEFAULT '[]',
+  outros_prioritarios TEXT,
+  descricao_escopo TEXT NOT NULL,
+  investimento TEXT NOT NULL,
+  moradores_quantidade INTEGER,
+  moradores_idades TEXT,
+
+  -- Preferências
+  importancia JSONB DEFAULT '{}',
+  condicao_especial TEXT,
+  cor_preferida TEXT,
+  estilos JSONB DEFAULT '{}',
+  sustentabilidade INTEGER,
+  referencias JSONB DEFAULT '[]',
+
+  -- Subjetivas
+  subjetiva_sabado TEXT,
+  subjetiva_comodo TEXT,
+  subjetiva_estilo_vida TEXT,
+  subjetiva_restricoes TEXT,
+  subjetiva_motivacao TEXT,
+
+  -- Prazo
+  prazo_data DATE,
+  prazo_flexibilidade INTEGER,
+
+  -- Finalização
+  aceite_minimo BOOLEAN NOT NULL DEFAULT FALSE,
+  aceite_lgpd BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+ALTER TABLE orcamento_solicitacoes ENABLE ROW LEVEL SECURITY;
+
+-- Anon pode inserir (form público)
+CREATE POLICY "Allow anon insert on orcamento_solicitacoes"
+  ON orcamento_solicitacoes FOR INSERT
+  WITH CHECK (true);
+
+-- Apenas autenticados (admin) lêem e atualizam
+CREATE POLICY "Allow authenticated read on orcamento_solicitacoes"
+  ON orcamento_solicitacoes FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Allow authenticated update on orcamento_solicitacoes"
+  ON orcamento_solicitacoes FOR UPDATE
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Allow authenticated delete on orcamento_solicitacoes"
+  ON orcamento_solicitacoes FOR DELETE
+  USING (auth.role() = 'authenticated');

@@ -3,12 +3,14 @@
 import { useState } from "react";
 import PortfolioManager from "./portfolio-manager";
 import TestimonialsManager from "./testimonials-manager";
+import SolicitacoesManager from "./solicitacoes-manager";
 import {
   FolderKanban,
   MessageSquare,
+  ClipboardList,
 } from "lucide-react";
 
-type Tab = "portfolio" | "testimonials";
+type Tab = "portfolio" | "testimonials" | "solicitacoes";
 
 export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>("portfolio");
@@ -43,6 +45,12 @@ export default function AdminDashboardPage() {
             icon={<MessageSquare className="w-4 h-4" />}
             label="Depoimentos"
           />
+          <TabButton
+            active={activeTab === "solicitacoes"}
+            onClick={() => setActiveTab("solicitacoes")}
+            icon={<ClipboardList className="w-4 h-4" />}
+            label="Solicitações"
+          />
         </div>
       </div>
 
@@ -50,6 +58,7 @@ export default function AdminDashboardPage() {
         <div className="relative z-10 p-6 md:p-10 animate-in fade-in zoom-in-95 duration-500">
           {activeTab === "portfolio" && <PortfolioManager />}
           {activeTab === "testimonials" && <TestimonialsManager />}
+          {activeTab === "solicitacoes" && <SolicitacoesManager />}
         </div>
       </div>
     </div>
