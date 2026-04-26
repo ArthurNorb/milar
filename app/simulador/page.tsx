@@ -221,7 +221,7 @@ export default function SimuladorPage() {
         </div>
       )}
 
-      <Card className="border-none shadow-2xl bg-[#e3d9ce]/95 backdrop-blur-md">
+      <Card className="border-none shadow-2xl bg-white/95 backdrop-blur-md">
         <CardHeader className="pb-4 border-b border-[#bfa086]/20">
           <CardTitle>{stepTitle[step]}</CardTitle>
           <CardDescription>{stepDescription[step]}</CardDescription>
@@ -412,7 +412,7 @@ export default function SimuladorPage() {
               {/* Moradores com input individual por pessoa */}
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="moradores">Quantas pessoas vão morar / usar o espaço? *</Label>
+                  <Label htmlFor="moradores">Quantas pessoas vão usar o espaço? *</Label>
                   <Input
                     id="moradores"
                     type="number"
@@ -429,12 +429,12 @@ export default function SimuladorPage() {
 
                 {qtdMoradores > 0 && (
                   <div className="space-y-2 animate-in fade-in duration-300">
-                    <Label>Idade de cada morador</Label>
+                    <Label>Idade de cada pessoa</Label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {Array.from({ length: qtdMoradores }).map((_, i) => (
                         <div key={i} className="space-y-1">
                           <p className="text-[9px] font-['Spartan'] uppercase tracking-widest text-[#756d47]">
-                            Morador {i + 1}
+                            Pessoa {i + 1}
                           </p>
                           <Input
                             type="number"

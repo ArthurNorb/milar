@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
 import { buildEmailHtml, buildConfirmationEmailHtml } from "@/lib/email-template";
 import { OrcamentoFormData } from "@/lib/orcamento-types";
 
@@ -34,9 +33,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Os aceites são obrigatórios" }, { status: 400 });
     }
 
-    // Inserir no Supabase (anon key — RLS permite insert público)
-    const supabase = await getSupabaseServerClient();
-    const { data: record, error: dbError } = await supabase
+    // Inserir no Supabase via service role (bypassa RLS — insert controlado pelo servidor)
+    const { data: record, error: dbError } = await getServiceClient()
       .from("orcamento_solicitacoes")
       .insert({
         nome: form.nome,
