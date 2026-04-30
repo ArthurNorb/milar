@@ -1,9 +1,8 @@
 import { Metadata } from "next";
 import Image from "next/image";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import ProjectImageCarousel from "./_components/project-image-carousel";
 
 export const metadata: Metadata = {
   title: "Portfólio | Milar Arquitetura",
@@ -71,12 +70,14 @@ export default async function PortfolioPage() {
                   index % 3 === 0 ? "lg:w-3/5 aspect-4/5" : "w-full aspect-3/4"
                 }`}
               >
-                <Image
-                  src={project.image_url}
+                <ProjectImageCarousel
+                  images={
+                    project.image_urls?.length
+                      ? project.image_urls
+                      : [project.image_url]
+                  }
                   alt={project.title}
-                  fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover transition-transform duration-1000 group-hover:scale-110"
                 />
 
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-700 pointer-events-none mix-blend-multiply bg-[#87381e]">

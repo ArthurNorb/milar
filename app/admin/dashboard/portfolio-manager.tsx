@@ -36,6 +36,7 @@ type Project = {
   title: string;
   description: string;
   image_url: string;
+  image_urls: string[];
   tags: string[];
 };
 
@@ -47,8 +48,9 @@ export default function PortfolioManager() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tagsInput, setTagsInput] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [existingUrls, setExistingUrls] = useState<string[]>([]);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [newPreviews, setNewPreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -75,23 +77,17 @@ export default function PortfolioManager() {
     }
   };
 
-  useEffect(() => {
-    if (!imageFile) {
-      if (!editingProject) setPreviewUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(imageFile);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [imageFile, editingProject]);
-
   const handleEdit = (project: Project) => {
     setEditingProject(project);
     setTitle(project.title);
     setDescription(project.description);
     setTagsInput(project.tags ? project.tags.join(", ") : "");
-    setPreviewUrl(project.image_url);
-    setImageFile(null);
+    const urls = project.image_urls?.length
+      ? project.image_urls
+      : [project.image_url];
+    setExistingUrls(urls);
+    setNewFiles([]);
+    setNewPreviews([]);
     window.scrollTo({ top: 0, behavior: "smooth" });
     setMessage(null);
   };
@@ -101,9 +97,32 @@ export default function PortfolioManager() {
     setTitle("");
     setDescription("");
     setTagsInput("");
-    setImageFile(null);
-    setPreviewUrl(null);
+    newPreviews.forEach((url) => URL.revokeObjectURL(url));
+    setExistingUrls([]);
+    setNewFiles([]);
+    setNewPreviews([]);
     setMessage(null);
+  };
+
+  const handleAddFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setNewFiles((prev) => [...prev, ...files]);
+    setNewPreviews((prev) => [
+      ...prev,
+      ...files.map((f) => URL.createObjectURL(f)),
+    ]);
+    e.target.value = "";
+  };
+
+  const removeExistingUrl = (idx: number) => {
+    setExistingUrls((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeNewFile = (idx: number) => {
+    URL.revokeObjectURL(newPreviews[idx]);
+    setNewFiles((prev) => prev.filter((_, i) => i !== idx));
+    setNewPreviews((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handleDelete = async (id: number) => {
@@ -132,25 +151,31 @@ export default function PortfolioManager() {
     setMessage(null);
 
     try {
-      let imageUrl = editingProject ? editingProject.image_url : "";
-
-      if (imageFile) {
-        const fileExt = imageFile.name.split(".").pop();
-        const fileName = `${Date.now()}.${fileExt}`;
+      const uploadedUrls: string[] = [];
+      for (const file of newFiles) {
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
         const filePath = `projects/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from("project-images")
-          .upload(filePath, imageFile);
+          .upload(filePath, file);
 
         if (uploadError)
-          throw new Error(`Falha no upload da imagem: ${uploadError.message}`);
+          throw new Error(`Falha no upload: ${uploadError.message}`);
 
         const { data: urlData } = supabase.storage
           .from("project-images")
           .getPublicUrl(filePath);
 
-        imageUrl = urlData.publicUrl;
+        uploadedUrls.push(urlData.publicUrl);
+      }
+
+      const allUrls = [...existingUrls, ...uploadedUrls];
+      if (!allUrls.length) {
+        allUrls.push(
+          "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+        );
       }
 
       const tags = tagsInput
@@ -161,9 +186,8 @@ export default function PortfolioManager() {
       const projectData = {
         title,
         description,
-        image_url:
-          imageUrl ||
-          "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
+        image_url: allUrls[0],
+        image_urls: allUrls,
         tags,
       };
 
@@ -309,69 +333,100 @@ export default function PortfolioManager() {
               <div className="flex items-center gap-2 text-[#bfa086] mb-1">
                 <ImagePlus className="w-4 h-4" />
                 <span className="font-['Spartan'] text-[10px] uppercase tracking-widest font-bold">
-                  Mídia Principal
+                  Mídia do Projeto
                 </span>
               </div>
               <CardTitle className="text-2xl font-serif">
-                Capa do Projeto
+                Fotos do Projeto
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="relative aspect-3/4 w-full rounded-t-full border-2 border-dashed border-[#e3d9ce]/20 flex flex-col items-center justify-center overflow-hidden group transition-all hover:border-[#bfa086]/50">
-                {previewUrl ? (
-                  <>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-3 gap-2">
+                {existingUrls.map((url, i) => (
+                  <div
+                    key={url + i}
+                    className="relative aspect-square rounded-xl overflow-hidden bg-[#e3d9ce]/10"
+                  >
+                    {i === 0 && (
+                      <div className="absolute top-1 left-1 z-10 bg-[#87381e] text-[#e3d9ce] text-[8px] font-['Spartan'] uppercase tracking-wider px-1.5 py-0.5 rounded-full">
+                        Capa
+                      </div>
+                    )}
                     <Image
-                      src={previewUrl}
-                      alt="Preview"
+                      src={url}
+                      alt=""
                       fill
-                      sizes="(max-width: 1024px) 100vw, 42vw"
-                      className="object-cover transition-transform group-hover:scale-105"
+                      sizes="120px"
+                      className="object-cover"
                     />
                     <button
                       type="button"
-                      onClick={() => {
-                        setImageFile(null);
-                        if (!editingProject) setPreviewUrl(null);
-                      }}
-                      className="absolute top-4 right-4 bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition-colors z-10"
+                      onClick={() => removeExistingUrl(i)}
+                      className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full hover:bg-black/70 transition-colors z-10"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-3 h-3" />
                     </button>
-                    {editingProject && !imageFile && (
-                      <div className="absolute bottom-4 bg-black/60 backdrop-blur-sm text-xs px-3 py-1 rounded-full pointer-events-none">
-                        Imagem Atual
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center gap-4 p-8 text-center">
-                    <div className="w-16 h-16 rounded-full bg-[#e3d9ce]/10 flex items-center justify-center">
-                      <Plus className="w-8 h-8 text-[#bfa086]" />
-                    </div>
-                    <div>
-                      <p className="font-['Spartan'] text-[10px] uppercase tracking-widest font-bold text-[#bfa086]">
-                        Selecionar Foto
-                      </p>
-                      <p className="text-xs text-[#e3d9ce]/40 mt-1">
-                        Alta resolução recomendada
-                      </p>
-                    </div>
                   </div>
-                )}
-                <input
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                />
+                ))}
+                {newPreviews.map((url, i) => {
+                  const isCover = existingUrls.length === 0 && i === 0;
+                  return (
+                    <div
+                      key={i}
+                      className="relative aspect-square rounded-xl overflow-hidden bg-[#e3d9ce]/10"
+                    >
+                      {isCover && (
+                        <div className="absolute top-1 left-1 z-10 bg-[#87381e] text-[#e3d9ce] text-[8px] font-['Spartan'] uppercase tracking-wider px-1.5 py-0.5 rounded-full">
+                          Capa
+                        </div>
+                      )}
+                      <Image
+                        src={url}
+                        alt=""
+                        fill
+                        sizes="120px"
+                        className="object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeNewFile(i)}
+                        className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full hover:bg-black/70 transition-colors z-10"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+                <label className="relative aspect-square rounded-xl border-2 border-dashed border-[#e3d9ce]/25 flex flex-col items-center justify-center cursor-pointer hover:border-[#bfa086]/60 transition-colors">
+                  <Plus className="w-6 h-6 text-[#bfa086]" />
+                  <span className="text-[8px] font-['Spartan'] uppercase tracking-wider text-[#e3d9ce]/50 mt-1">
+                    Adicionar
+                  </span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={handleAddFiles}
+                  />
+                </label>
               </div>
 
-              <div className="pt-4 flex flex-col gap-3">
+              {existingUrls.length + newFiles.length > 0 && (
+                <p className="text-[10px] text-[#e3d9ce]/40 font-['Spartan']">
+                  {existingUrls.length + newFiles.length} foto
+                  {existingUrls.length + newFiles.length > 1 ? "s" : ""} · A
+                  primeira é a capa
+                </p>
+              )}
+
+              <div className="pt-2 flex flex-col gap-3">
                 <Button
                   type="submit"
                   disabled={
-                    loading || !title || (!imageFile && !editingProject)
+                    loading ||
+                    !title ||
+                    existingUrls.length + newFiles.length === 0
                   }
                   className="w-full h-14 bg-[#87381e] hover:bg-[#87381e]/80 text-[#e3d9ce] font-['Spartan'] text-xs tracking-widest uppercase rounded-xl transition-all shadow-lg"
                 >

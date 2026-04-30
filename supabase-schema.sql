@@ -4,9 +4,13 @@ CREATE TABLE IF NOT EXISTS projects (
   title TEXT NOT NULL,
   description TEXT NOT NULL,
   image_url TEXT NOT NULL,
+  image_urls TEXT[] DEFAULT '{}',
   tags TEXT[] DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration: add image_urls to existing projects table
+-- ALTER TABLE projects ADD COLUMN IF NOT EXISTS image_urls TEXT[] DEFAULT '{}';
 
 -- Testimonials table
 CREATE TABLE IF NOT EXISTS testimonials (
