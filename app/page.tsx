@@ -72,7 +72,7 @@ export default async function HomePage() {
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4 md:pt-6 w-full sm:w-auto">
               <Button
-                render={<Link href="/simulador" />}
+                render={<Link href="/solicitar-projeto" />}
                 nativeButton={false}
                 size="lg"
                 className="w-full sm:w-auto px-8 h-14 bg-[#c3532e] hover:bg-[#c3532e]/80 text-[#e3d9ce] font-['Spartan'] text-xs tracking-wider uppercase rounded-full transition-transform hover:scale-105 duration-300 flex items-center justify-center shadow-lg"
