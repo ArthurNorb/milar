@@ -28,6 +28,7 @@ import {
   Edit3,
   Trash2,
   FolderKanban,
+  GripVertical,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -38,11 +39,15 @@ type Project = {
   image_url: string;
   image_urls: string[];
   tags: string[];
+  display_order: number | null;
 };
 
 export default function PortfolioManager() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
 
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [title, setTitle] = useState("");
@@ -66,6 +71,7 @@ export default function PortfolioManager() {
       const { data, error } = await supabase
         .from("projects")
         .select("*")
+        .order("display_order", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -143,6 +149,60 @@ export default function PortfolioManager() {
     } catch (error: any) {
       setMessage({ type: "error", text: `Erro ao excluir: ${error.message}` });
     }
+  };
+
+  const persistOrder = async (ordered: Project[]) => {
+    setSavingOrder(true);
+    try {
+      const updates = ordered.map((p, i) =>
+        supabase
+          .from("projects")
+          .update({ display_order: i })
+          .eq("id", p.id),
+      );
+      const results = await Promise.all(updates);
+      const failed = results.find((r) => r.error);
+      if (failed?.error) throw failed.error;
+      setMessage({ type: "success", text: "Ordem do portfólio salva." });
+    } catch (error: any) {
+      setMessage({
+        type: "error",
+        text: `Erro ao salvar ordem: ${error.message}`,
+      });
+      fetchProjects();
+    } finally {
+      setSavingOrder(false);
+    }
+  };
+
+  const handleDragStart = (index: number) => (e: React.DragEvent) => {
+    setDragIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (index: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragOverIndex !== index) setDragOverIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDragIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (index: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    if (dragIndex === null || dragIndex === index) {
+      handleDragEnd();
+      return;
+    }
+    const next = [...projects];
+    const [moved] = next.splice(dragIndex, 1);
+    next.splice(index, 0, moved);
+    setProjects(next);
+    handleDragEnd();
+    persistOrder(next);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -477,9 +537,22 @@ export default function PortfolioManager() {
               {projects.length === 1
                 ? "projeto publicado"
                 : "projetos publicados"}
+              {savingOrder && (
+                <span className="ml-2 inline-flex items-center gap-1 text-[#87381e]">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  salvando ordem…
+                </span>
+              )}
             </p>
           </div>
         </div>
+
+        {projects.length > 1 && (
+          <p className="text-xs italic font-light text-[#756d47] -mt-4">
+            Arraste pelo ícone <GripVertical className="inline w-3 h-3" /> para
+            reordenar como aparecem no site.
+          </p>
+        )}
 
         {loadingProjects ? (
           <div className="flex flex-col items-center py-12 text-[#756d47]">
@@ -494,11 +567,28 @@ export default function PortfolioManager() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project) => (
+            {projects.map((project, index) => (
               <Card
                 key={project.id}
-                className="group border-none bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
+                draggable
+                onDragStart={handleDragStart(index)}
+                onDragOver={handleDragOver(index)}
+                onDrop={handleDrop(index)}
+                onDragEnd={handleDragEnd}
+                className={`group relative border-none bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ${
+                  dragIndex === index ? "opacity-40" : ""
+                } ${
+                  dragOverIndex === index && dragIndex !== index
+                    ? "ring-2 ring-[#87381e] ring-offset-2 ring-offset-[#e3d9ce]"
+                    : ""
+                }`}
               >
+                <div
+                  className="absolute top-3 left-3 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur text-[#2e3d30] flex items-center justify-center shadow-md cursor-grab active:cursor-grabbing"
+                  title="Arraste para reordenar"
+                >
+                  <GripVertical className="w-4 h-4" />
+                </div>
                 <div className="relative aspect-4/3 w-full overflow-hidden">
                   <Image
                     src={project.image_url}

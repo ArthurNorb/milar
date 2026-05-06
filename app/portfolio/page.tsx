@@ -33,6 +33,7 @@ export default async function PortfolioPage({ searchParams }: PortfolioProps) {
   } = await supabase
     .from("projects")
     .select("*", { count: "exact" })
+    .order("display_order", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false })
     .range(from, to);
 

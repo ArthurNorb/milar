@@ -6,11 +6,18 @@ CREATE TABLE IF NOT EXISTS projects (
   image_url TEXT NOT NULL,
   image_urls TEXT[] DEFAULT '{}',
   tags TEXT[] DEFAULT '{}',
+  display_order INTEGER,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE INDEX IF NOT EXISTS projects_display_order_idx ON projects (display_order);
+
 -- Migration: add image_urls to existing projects table
 -- ALTER TABLE projects ADD COLUMN IF NOT EXISTS image_urls TEXT[] DEFAULT '{}';
+
+-- Migration: add display_order to existing projects table
+-- ALTER TABLE projects ADD COLUMN IF NOT EXISTS display_order INTEGER;
+-- CREATE INDEX IF NOT EXISTS projects_display_order_idx ON projects (display_order);
 
 -- Testimonials table
 CREATE TABLE IF NOT EXISTS testimonials (
