@@ -65,9 +65,18 @@ export default async function HomePage() {
             </h1>
 
             <p className="text-base md:text-lg lg:text-xl text-[#e3d9ce]/80 max-w-lg font-light leading-relaxed">
-              A neurociência faz parte da criação em nossos projetos.
-              Trabalhamos forma personalizada, unindo estética com personalidade
-              e bem-estar, desenvolvendo o ambiente ideal para você.
+              No escritório MILAR arquitetura desenvolvemos projetos
+              residenciais utilizando estratégias e conceitos da neurociência
+              que, através do ambiente, conseguem gerar mais qualidade de vida e
+              bem-estar, de forma totalmente personalizada e garantindo estética
+              e personalidade.
+            </p>
+            <p className="text-base md:text-lg lg:text-xl text-[#e3d9ce]/80 max-w-lg font-light leading-relaxed">
+              À frente do escritório, Giovanna Lima é arquiteta e master em
+              neuroarquitetura. Tem experiência sólida em execução de projetos,
+              gestão de projetos e gestão equipe. Hoje, oferecemos 03 principais
+              formas de serviço: Consultoria, Projeto arquitetônico ou de
+              interiores e Acompanhamento de obra.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4 md:pt-6 w-full sm:w-auto">
@@ -77,7 +86,7 @@ export default async function HomePage() {
                 size="lg"
                 className="w-full sm:w-auto px-8 h-14 bg-[#c3532e] hover:bg-[#c3532e]/80 text-[#e3d9ce] font-['Spartan'] text-xs tracking-wider uppercase rounded-full transition-transform hover:scale-105 duration-300 flex items-center justify-center shadow-lg"
               >
-                Simular Orçamento
+                Solicitar Projeto <ArrowRight className="w-4 h-4" />
               </Button>
               <Button
                 render={<Link href="/portfolio" />}
