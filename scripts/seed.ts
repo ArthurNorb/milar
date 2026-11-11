@@ -1,4 +1,20 @@
-import { supabase } from '../lib/supabase'
+// Uso: npm run seed  (carrega .env.local via tsx --env-file)
+// Usa a service role para ignorar RLS — nunca exponha essa chave no cliente.
+import { createClient } from '@supabase/supabase-js'
+
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!url || !serviceKey) {
+  console.error(
+    'Defina NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY em .env.local'
+  )
+  process.exit(1)
+}
+
+const supabase = createClient(url, serviceKey, {
+  auth: { persistSession: false },
+})
 
 async function seedProjects() {
   const projects = [
@@ -17,15 +33,14 @@ async function seedProjects() {
   ]
 
   for (const project of projects) {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('projects')
-      .insert(project)
-      .select()
+      .insert({ ...project, image_urls: [project.image_url] })
 
     if (error) {
-      console.error(`Error inserting project ${project.title}:`, error)
+      console.error(`Erro ao inserir projeto ${project.title}:`, error)
     } else {
-      console.log(`Inserted project: ${project.title}`)
+      console.log(`Projeto inserido: ${project.title}`)
     }
   }
 }
@@ -34,40 +49,37 @@ async function seedTestimonials() {
   const testimonials = [
     {
       client_name: 'Fernando',
-      text: '“A casa tem um abraço. Não é só decoração, tem toda uma ciência por trás.”',
+      text: 'A casa tem um abraço. Não é só decoração, tem toda uma ciência por trás.',
       is_approved: true,
     },
     {
       client_name: 'Mariana',
-      text: '“O clima mudou muito, o ambiente é muito mais relaxante. Valeu cada centavo.”',
+      text: 'O clima mudou muito, o ambiente é muito mais relaxante. Valeu cada centavo.',
       is_approved: true,
     },
   ]
 
   for (const testimonial of testimonials) {
-    const { data, error } = await supabase
-      .from('testimonials')
-      .insert(testimonial)
-      .select()
+    const { error } = await supabase.from('testimonials').insert(testimonial)
 
     if (error) {
-      console.error(`Error inserting testimonial from ${testimonial.client_name}:`, error)
+      console.error(`Erro ao inserir depoimento de ${testimonial.client_name}:`, error)
     } else {
-      console.log(`Inserted testimonial: ${testimonial.client_name}`)
+      console.log(`Depoimento inserido: ${testimonial.client_name}`)
     }
   }
 }
 
 async function main() {
-  console.log('Starting seed...')
+  console.log('Iniciando seed...')
 
   await seedProjects()
   await seedTestimonials()
 
-  console.log('Seed completed!')
+  console.log('Seed concluído!')
 }
 
 main().catch((error) => {
-  console.error('Seed failed:', error)
+  console.error('Seed falhou:', error)
   process.exit(1)
 })

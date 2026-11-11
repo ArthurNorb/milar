@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PortfolioManager from "./portfolio-manager";
 import TestimonialsManager from "./testimonials-manager";
 import SolicitacoesManager from "./solicitacoes-manager";
@@ -12,8 +13,31 @@ import {
 
 type Tab = "portfolio" | "testimonials" | "solicitacoes";
 
+const TABS: readonly Tab[] = ["portfolio", "testimonials", "solicitacoes"];
+
+function isTab(value: string | null): value is Tab {
+  return TABS.includes(value as Tab);
+}
+
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("portfolio");
+  // useSearchParams exige Suspense no App Router
+  return (
+    <Suspense fallback={null}>
+      <AdminDashboard />
+    </Suspense>
+  );
+}
+
+function AdminDashboard() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // A aba ativa vive na URL (?tab=) para sobreviver a refresh e links diretos
+  const tabParam = searchParams.get("tab");
+  const activeTab: Tab = isTab(tabParam) ? tabParam : "portfolio";
+  const setActiveTab = (tab: Tab) =>
+    router.replace(`${pathname}?tab=${tab}`, { scroll: false });
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -78,6 +102,7 @@ function TabButton({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={`
         flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all duration-300 whitespace-nowrap

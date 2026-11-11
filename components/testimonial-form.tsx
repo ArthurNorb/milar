@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckCircle2, AlertCircle, ArrowRight, Quote } from "lucide-react";
+import { AlertCircle, ArrowRight, Quote } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
@@ -25,6 +25,8 @@ export default function TestimonialForm() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // currentTarget vira null após o primeiro await; guardar a referência antes.
+    const form = event.currentTarget;
     setIsSubmitting(true);
     setError(null);
 
@@ -34,7 +36,7 @@ export default function TestimonialForm() {
       return;
     }
 
-    const formData = new FormData(event.currentTarget);
+    const formData = new FormData(form);
     const clientName = formData.get("client_name") as string;
     const text = formData.get("text") as string;
 
@@ -53,7 +55,7 @@ export default function TestimonialForm() {
       console.error(submitError);
     } else {
       setIsSuccess(true);
-      event.currentTarget.reset();
+      form.reset();
       setAcceptTerms(false);
     }
   }
@@ -144,7 +146,7 @@ export default function TestimonialForm() {
           id="terms"
           checked={acceptTerms}
           onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
-          className="border-[#87381e]/40 data-[state=checked]:bg-[#87381e] data-[state=checked]:border-[#87381e] data-[state=checked]:text-[#e3d9ce] h-4 w-4 rounded transition-all shrink-0"
+          className="border-[#87381e]/40 data-checked:bg-[#87381e] data-checked:border-[#87381e] data-checked:text-[#e3d9ce] h-4 w-4 rounded transition-all shrink-0"
         />
         {/* Aqui está a mágica: transform scale-[0.85] origin-left */}
         <div className="flex-1 overflow-hidden">
@@ -185,7 +187,7 @@ export default function TestimonialForm() {
                     </strong>
                     O depoimento será enviado para nossa base de dados e, se
                     aprovado pela arquiteta Giovanna Lima, será exibido
-                    publicamente na seção de "Feedbacks" do site.
+                    publicamente na seção de &quot;Feedbacks&quot; do site.
                   </p>
                   <p>
                     <strong className="text-[#2e3d30] font-medium block mb-1">

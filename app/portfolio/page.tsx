@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getProjectsPage } from "@/lib/queries";
 import ProjectImageCarousel from "./_components/project-image-carousel";
 
 interface PortfolioProps {
@@ -16,33 +16,14 @@ export const metadata: Metadata = {
 };
 
 export default async function PortfolioPage({ searchParams }: PortfolioProps) {
-  const supabase = await getSupabaseServerClient();
   const { page } = await searchParams;
 
-  const itemsPerPage = 5;
   const parsedPage = Number(page);
-  const currentPage = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
-  const from = (currentPage - 1) * itemsPerPage;
-  const to = from + itemsPerPage - 1;
+  const currentPage =
+    Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
 
-  // Busca os projetos com paginação e o total (count) para calcular as páginas
-  const {
-    data: projects,
-    count,
-    error,
-  } = await supabase
-    .from("projects")
-    .select("*", { count: "exact" })
-    .order("display_order", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: false })
-    .range(from, to);
-
-  if (error) {
-    console.error("Error fetching projects:", error);
-  }
-
-  const projectList = projects || [];
-  const totalPages = count ? Math.ceil(count / itemsPerPage) : 1;
+  const { projects: projectList, totalPages } =
+    await getProjectsPage(currentPage);
 
   return (
     <div className="min-h-screen bg-[#e3d9ce] text-[#2e3d30] selection:bg-[#87381e] selection:text-[#e3d9ce] pt-16 pb-24 overflow-hidden relative">
@@ -54,7 +35,6 @@ export default async function PortfolioPage({ searchParams }: PortfolioProps) {
           fill
           sizes="100vw"
           className="object-cover"
-          priority
         />
       </div>
 

@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Quote, ArrowRight, PenLine } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { getApprovedTestimonials } from "@/lib/queries";
 import TestimonialForm from "@/components/testimonial-form";
 import {
   Dialog,
@@ -13,22 +13,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-async function getApprovedTestimonials() {
-  const supabase = await getSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("testimonials")
-    .select("*")
-    .eq("is_approved", true)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Erro ao buscar depoimentos:", error);
-    return [];
-  }
-
-  return data || [];
-}
 
 export default async function HomePage() {
   const testimonials = await getApprovedTestimonials();
@@ -41,6 +25,7 @@ export default async function HomePage() {
             src="/estampas/Preenchida Macro 01.png"
             alt="Textura Orgânica"
             fill
+            sizes="100vw"
             loading="eager"
             className="object-cover animate-[pulse_10s_ease-in-out_infinite]"
           />
@@ -122,6 +107,7 @@ export default async function HomePage() {
             src="/estampas/Contorno Macro 04.png"
             alt="Textura de fundo"
             fill
+            sizes="100vw"
             className="object-cover object-center"
           />
         </div>
@@ -172,8 +158,8 @@ export default async function HomePage() {
                   projetos para entregar soluções de vida.
                 </p>
                 <p className="pl-5 border-l-2 border-[#87381e] italic text-lg md:text-xl text-[#87381e]">
-                  "Um projeto só faz sentido quando ele toca o coração e melhora
-                  o cotidiano de acordo com a sua necessidade."
+                  &quot;Um projeto só faz sentido quando ele toca o coração e melhora
+                  o cotidiano de acordo com a sua necessidade.&quot;
                 </p>
               </div>
 
@@ -239,15 +225,14 @@ export default async function HomePage() {
           </div>
 
           <div className="flex overflow-x-auto md:grid md:grid-cols-2 gap-6 md:gap-12 lg:gap-24 snap-x snap-mandatory pb-8 md:pb-0 -mx-5 px-5 md:mx-0 md:px-0 scrollbar-hide">
-            {testimonials.length > 0 ? (
-              testimonials.map((testimonial) => (
+            {testimonials.map((testimonial) => (
                 <div
                   key={testimonial.id}
                   className="min-w-[85vw] md:min-w-0 snap-center group cursor-pointer bg-[#e3d9ce]/5 md:bg-transparent p-6 md:p-0 rounded-3xl md:rounded-none border border-[#bfa086]/10 md:border-none"
                 >
                   <Quote className="h-8 w-8 md:h-10 md:w-10 text-[#87381e] mb-4 md:mb-6 transform transition-transform group-hover:-translate-y-2 duration-300" />
                   <blockquote className="text-xl md:text-2xl lg:text-3xl font-serif font-light leading-snug text-[#e3d9ce] mb-6 md:mb-8">
-                    "{testimonial.text}"
+                    &quot;{testimonial.text}&quot;
                   </blockquote>
                   <div className="flex items-center gap-4">
                     <Avatar className="h-12 w-12 md:h-14 md:w-14 border-2 border-[#bfa086]">
@@ -265,57 +250,7 @@ export default async function HomePage() {
                     </div>
                   </div>
                 </div>
-              ))
-            ) : (
-              <>
-                <div className="min-w-[85vw] md:min-w-0 snap-center group cursor-pointer bg-[#e3d9ce]/5 md:bg-transparent p-6 md:p-0 rounded-3xl md:rounded-none border border-[#bfa086]/10 md:border-none">
-                  <Quote className="h-8 w-8 md:h-10 md:w-10 text-[#87381e] mb-4 md:mb-6 transform transition-transform group-hover:-translate-y-2 duration-300" />
-                  <blockquote className="text-xl md:text-2xl lg:text-3xl font-serif font-light leading-snug text-[#e3d9ce] mb-6 md:mb-8">
-                    A casa tem um abraço. Não é só decoração, tem toda uma
-                    ciência por trás que você explicou. Todo mundo perguntou o
-                    seu contato!
-                  </blockquote>
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12 md:h-14 md:w-14 border-2 border-[#bfa086]">
-                      <AvatarFallback className="bg-[#2e3d30] text-[#bfa086] font-serif text-lg">
-                        F
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-['Spartan'] uppercase text-[10px] md:text-xs tracking-widest text-[#bfa086]">
-                        Fernando
-                      </p>
-                      <p className="text-xs md:text-sm text-[#e3d9ce]/60 font-light italic mt-0.5">
-                        Cliente Residencial
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="min-w-[85vw] md:min-w-0 snap-center group cursor-pointer bg-[#e3d9ce]/5 md:bg-transparent p-6 md:p-0 rounded-3xl md:rounded-none border border-[#bfa086]/10 md:border-none">
-                  <Quote className="h-8 w-8 md:h-10 md:w-10 text-[#87381e] mb-4 md:mb-6 transform transition-transform group-hover:-translate-y-2 duration-300" />
-                  <blockquote className="text-xl md:text-2xl lg:text-3xl font-serif font-light leading-snug text-[#e3d9ce] mb-6 md:mb-8">
-                    O clima mudou muito, o ambiente é relaxante. O foco vem
-                    fácil, até a dor de cabeça passou. Valeu cada centavo.
-                  </blockquote>
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12 md:h-14 md:w-14 border-2 border-[#bfa086]">
-                      <AvatarFallback className="bg-[#2e3d30] text-[#bfa086] font-serif text-lg">
-                        M
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-['Spartan'] uppercase text-[10px] md:text-xs tracking-widest text-[#bfa086]">
-                        Mariana
-                      </p>
-                      <p className="text-xs md:text-sm text-[#e3d9ce]/60 font-light italic mt-0.5">
-                        Projeto Apto GG
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
+              ))}
           </div>
         </div>
       </section>

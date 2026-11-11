@@ -37,13 +37,17 @@ export function Header() {
         </nav>
 
         <div className="flex items-center">
-          <Button className="bg-[#2e3d30] hover:bg-[#87381e] text-[#e3d9ce] rounded-full h-12 px-0 overflow-hidden transition-all duration-300 hover:scale-105 shadow-md border-none">
-            <Link
-              href="/solicitar-projeto"
-              className="w-full h-full flex items-center justify-center px-6 sm:px-8 font-['Spartan'] uppercase text-[10px] sm:text-xs tracking-widest"
-            >
-              Quero um Projeto
-            </Link>
+          <Button
+            render={
+              <Link
+                href="/solicitar-projeto"
+                className="w-full h-full flex items-center justify-center px-6 sm:px-8 font-['Spartan'] uppercase text-[10px] sm:text-xs tracking-widest"
+              />
+            }
+            nativeButton={false}
+            className="bg-[#2e3d30] hover:bg-[#87381e] text-[#e3d9ce] rounded-full h-12 px-0 overflow-hidden transition-all duration-300 hover:scale-105 shadow-md border-none"
+          >
+            Quero um Projeto
           </Button>
         </div>
       </div>

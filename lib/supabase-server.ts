@@ -12,8 +12,17 @@ export async function getSupabaseServerClient() {
         getAll() {
           return cookieStore.getAll()
         },
-        setAll() {
-          // The `setAll` method is required but we don't need to do anything
+        setAll(cookiesToSet) {
+          // Em Server Components cookies são somente leitura e lançam erro;
+          // em Route Handlers (ex.: /auth/signout) a escrita funciona.
+          // O proxy já mantém a sessão atualizada nos demais casos.
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // ignorado intencionalmente
+          }
         },
       },
     }

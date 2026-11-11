@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display, League_Spartan } from "next/font/google";
 import "./globals.css";
 import { ConditionalLayout } from "@/components/layout/conditional-layout";
+import { siteConfig } from "@/lib/site-config";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -18,10 +19,21 @@ const spartan = League_Spartan({
   variable: "--font-spartan",
 });
 
+const title = "Milar Arquitetura | Giovanna Lima";
+const description =
+  "Design que toca o coração e transforma. Estética e Neuroarquitetura por Giovanna Lima.";
+
 export const metadata: Metadata = {
-  title: "Milar Arquitetura | Giovanna Lima",
-  description:
-    "Design que toca o coração e transforma. Estética e Neuroarquitetura por Giovanna Lima.",
+  metadataBase: new URL(siteConfig.url),
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+    siteName: siteConfig.name,
+    locale: "pt_BR",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

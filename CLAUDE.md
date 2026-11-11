@@ -1,151 +1,89 @@
 # Milar Arquitetura — Guia para Claude Code
 
+Site de portfólio e captação da arquiteta Giovanna Lima (neuroarquitetura). Next.js 16 + Supabase.
+
+## Fluxo de Trabalho (obrigatório)
+
+- **Antes de começar qualquer tarefa**, invoque a skill `/context-mode:context-mode` (Skill `context-mode:context-mode`) e siga o roteamento dela para saídas grandes
+- **Nunca faça commit** (nem `git commit`, nem push). Quem commita é o usuário
+- **Ao terminar, sempre entregue uma mensagem de commit** sugerida, em uma linha, bem resumida, em PT-BR, com prefixo `feat:`, `fix:`, `refactor:`, `chore:` ou `doc:`
+  - Exemplo: `fix: reset do formulário de depoimento após envio`
+  - Se a tarefa misturar tipos, escolha o principal ou sugira uma mensagem por tipo
+
 ## Regras Críticas
-- **NUNCA leia ou liste a pasta `public/`** — contém imagens pesadas, é irrelevante para código
+
+- **NUNCA leia ou liste a pasta `public/`** — imagens pesadas, irrelevante para código
 - **NÃO altere estilos, cores, fontes ou layout do frontend** — o design está finalizado
-- Só toque em arquivos de UI se a tarefa exigir explicitamente uma mudança funcional de componente
-- Sempre use TypeScript estrito; nunca use `any` sem justificativa
+- Só toque em UI se a tarefa exigir explicitamente uma mudança funcional (e mantenha as classes visuais idênticas)
+- TypeScript estrito; **nunca `any`** (use `unknown` + `getErrorMessage` de `lib/utils.ts`)
+- Next.js 16 mudou APIs: leia `node_modules/next/dist/docs/` antes de usar uma API do framework (ver `AGENTS.md`)
+- **Módulo de orçamento está em descontinuação** — não corrigir nem melhorar:
+  `app/solicitar-projeto/**`, `app/api/simulacao/**`, `app/api/admin/orcamento/**`,
+  `solicitacoes-manager.tsx`, `lib/orcamento-types.ts`, `lib/email-template.ts`
+
+## Quando usar cada skill
+
+Invoque a skill do tópico **antes** de editar:
+
+- **Mexer em UI, componentes, classes Tailwind, cores, fontes ou imagens** → `milar-design-system`
+- **Mexer em banco, auth, RLS, Storage, migrations, queries ou tipos** → `milar-supabase`
+- **Criar rota, layout, metadata, sitemap/robots, proxy ou route handler** → `milar-nextjs16`
+- **Mexer no painel `/admin` ou adicionar uma aba/gerenciador** → `milar-admin`
+- **Antes de dizer que terminou ou sugerir a mensagem de commit** → `milar-verify`
+
+## Comandos
+
+```bash
+npm run dev         # servidor de desenvolvimento
+npm run typecheck   # tsc --noEmit
+npm run lint        # eslint (ignora o módulo de orçamento)
+npm run build       # build de produção
+npm run seed        # popula projetos/depoimentos (usa .env.local + service role)
+```
 
 ## Stack
-- **Next.js 16** (App Router) + **TypeScript**
-- **Tailwind CSS v4** + **Shadcn UI** (base: `@base-ui/react`, NÃO Radix)
+
+- **Next.js 16** (App Router, `proxy.ts`) + **TypeScript** estrito
+- **Tailwind CSS v4** + **Shadcn UI** sobre `@base-ui/react` (NÃO Radix)
 - **Supabase** (auth + DB + storage) via `@supabase/ssr`
-- **Resend** (`resend` SDK) — envio de emails transacionais
 - **Lucide React** para ícones
 
-## Estrutura de Arquivos Relevantes
-```
+## Mapa do Projeto
+
+```text
 app/
-  page.tsx                        # Home (SSR, busca testimonials)
-  layout.tsx                      # Root layout, fontes
-  globals.css                     # Tokens CSS (cores, fontes) — NÃO alterar
-  portfolio/page.tsx              # SSR, busca projects
-  curriculum/page.tsx             # SSR, busca curriculum + CV
-  simulador/page.tsx              # Client, formulário multi-step "Quero um Projeto" (5 steps + review + success)
-  simulador/layout.tsx            # Layout e metadata do simulador
-  simulador/_components/
-    ambientes-selector.tsx        # Chips com quantidade (+/−) por ambiente
-    style-matrix.tsx              # Matriz de estilos (desktop tabular / mobile cards)
-    importance-rank.tsx           # RadioGroup 1–3 por critério de importância
-    review-section.tsx            # Resumo elegante de todas as respostas
-  admin/page.tsx                  # Login Supabase Auth
-  admin/dashboard/page.tsx        # Tabs: portfolio | testimonials | curriculum | solicitações
-  admin/dashboard/portfolio-manager.tsx
-  admin/dashboard/testimonials-manager.tsx
-  admin/dashboard/curriculum-manager.tsx
-  admin/dashboard/solicitacoes-manager.tsx  # Mini-dashboard + lista de solicitações de projeto
-  admin/dashboard/layout.tsx
-  api/simulacao/route.ts          # POST — valida, persiste no Supabase, envia email via Resend
-  api/simulacao/upload/route.ts   # POST — upload de arquivo para bucket orcamento-uploads (service role)
-  api/admin/orcamento/[id]/signed-url/route.ts  # GET protegido — gera signed URL de 1h para anexo
-  auth/signout/route.ts           # Logout
+  page.tsx                  # Home (SSR, depoimentos aprovados)
+  portfolio/                # SSR paginado (5/página) + carrossel de fotos
+  admin/page.tsx            # Login
+  admin/dashboard/          # Abas: portfolio | testimonials (+ solicitações, em descontinuação)
+  auth/signout/route.ts     # Logout server-side
+  sitemap.ts, robots.ts     # SEO
 components/
-  layout/header.tsx               # Botão "Quero um Projeto" → /simulador
-  layout/footer.tsx
-  layout/conditional-layout.tsx   # Esconde header/footer em /admin
-  testimonial-form.tsx            # Formulário público de depoimento
-  ui/
-    radio-group.tsx               # Wrapper @base-ui/react RadioGroup, estilo Milar
-    slider.tsx                    # Wrapper @base-ui/react Slider (Root/Control/Track/Indicator/Thumb)
-    multi-select-chips.tsx        # Chips toggleáveis — recebe options/value/onChange
-    file-upload.tsx               # Drag-and-drop + preview; envia para /api/simulacao/upload
-    stepper.tsx                   # Header de progresso (Progress + bullets numerados)
+  layout/                   # header, footer, conditional-layout (esconde em /admin)
+  ui/                       # primitivos shadcn/base-ui
+  testimonial-form.tsx      # Formulário público de depoimento
 lib/
-  supabase.ts                     # Cliente browser (createBrowserClient)
-  supabase-server.ts              # Cliente server (createServerClient + cookies)
-  utils.ts                        # cn()
-  orcamento-types.ts              # Tipos compartilhados: OrcamentoFormData, AmbienteItem, etc.
-  email-template.ts               # buildEmailHtml() e buildConfirmationEmailHtml()
-middleware.ts                     # Proteção de rotas /admin
-supabase-schema.sql               # Schema completo (tabelas, RLS, buckets, policies)
+  supabase.ts               # Cliente browser
+  supabase-server.ts        # Cliente server (cookies)
+  queries.ts                # Leituras públicas (testimonials, projects)
+  types.ts                  # Project, Testimonial
+  site-config.ts            # Contato, CAU, URL do site, WhatsApp
+  utils.ts                  # cn(), getErrorMessage()
+proxy.ts                    # Protege /admin/dashboard/**
+supabase-schema.sql         # Schema completo
+supabase/migrations/        # Migrations incrementais (rodar no SQL Editor)
 ```
 
-## Banco de Dados (Supabase)
-Schema completo em `supabase-schema.sql`:
+## Banco de Dados
 
 | Tabela | Colunas principais |
 |---|---|
-| `projects` | id, title, description, image_url, tags (text[]), created_at |
-| `curriculum` | id, type ('education'\|'experience'\|'skill'), title, description, start_year, end_year |
-| `testimonials` | id, client_name, text, is_approved (bool), created_at |
-| `orcamento_solicitacoes` | id (uuid), created_at, status (enum), nome, email, telefone, tipo_projeto, tipo_imovel, ambientes (jsonb), investimento, estilos (jsonb), referencias (jsonb), prazo_data, aceite_minimo, aceite_lgpd, … |
+| `projects` | id, title, description, image_url, image_urls (text[]), tags (text[]), display_order, created_at |
+| `testimonials` | id, client_name, text, is_approved, created_at |
 
-**Status enum:** `nova` | `em_contato` | `concluida` | `descartada`
-
-**Storage buckets:**
-- `project-images` (público) — subpastas `projects/` e `cv/`
-- `orcamento-uploads` (privado) — referências visuais dos clientes; acesso via signed URLs geradas pelo service role
-
-**RLS em `orcamento_solicitacoes`:**
-- INSERT: anon (form público)
-- SELECT/UPDATE/DELETE: apenas `authenticated` (admin)
-
-**Atenção:** Se a tabela ou o bucket ainda não existirem, rodar o bloco SQL correspondente em `supabase-schema.sql` via SQL Editor do Supabase.
-
-## Tipos Importantes
-
-```ts
-// lib/orcamento-types.ts
-interface AmbienteItem { nome: string; quantidade: number; }
-
-interface OrcamentoFormData {
-  ambientes: AmbienteItem[];   // NÃO string[] — tem quantidade por ambiente
-  referencias: string[];       // paths no Storage (não URLs)
-  // … demais campos
-}
-```
-
-Em `solicitacoes-manager.tsx`, `ambientes` pode ser `string | AmbienteItem` (compatibilidade com registros antigos):
-```ts
-const nome = typeof a === "string" ? a : a.nome;
-const qty  = typeof a === "string" ? 1  : a.quantidade;
-```
-
-## Padrões de Código
-
-**Cliente Supabase:**
-```ts
-// Server Components / Route Handlers:
-import { getSupabaseServerClient } from '@/lib/supabase-server'
-const supabase = await getSupabaseServerClient()
-
-// Client Components:
-import { supabase } from '@/lib/supabase'
-
-// Service role (storage privado / signed URLs):
-import { createClient } from '@supabase/supabase-js'
-const serviceClient = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-```
-
-**@base-ui/react — API correta do Slider:**
-```tsx
-// NÃO existe Slider.Range — a API é:
-<Slider.Root><Slider.Control><Slider.Track><Slider.Indicator /><Slider.Thumb /></Slider.Track></Slider.Control></Slider.Root>
-```
-
-**Cores do design (apenas referência, não alterar):**
-- Fundo: `#e3d9ce` | Verde escuro: `#2e3d30` | Terracota: `#87381e` / `#c3532e`
-- Dourado: `#bfa086` | Cinza quente: `#756d47`
-
-**Fontes:**
-- `font-serif` / `font-heading` → Playfair Display
-- `font-sans` → Inter
-- `font-['Spartan']` → League Spartan (labels, badges, botões)
-
-## Auth
-- Login via `supabase.auth.signInWithPassword` em `/admin`
-- Middleware em `middleware.ts` protege `/admin/dashboard/**`
-- Logout via POST `/auth/signout` (redireciona para `/admin`)
+Buckets: `project-images` (público). Detalhes de RLS, migrations e Storage → skill `milar-supabase`.
 
 ## Variáveis de Ambiente
-```
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=        # obrigatório para uploads e signed URLs
-RESEND_API_KEY=                   # obrigatório para envio de emails
-RESEND_FROM_EMAIL=no-reply@milararquitetura.com
-ARQUITETA_EMAIL=gioarqt.1@gmail.com
-```
+
+Modelo em `.env.example`. Obrigatórias: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+`SUPABASE_SERVICE_ROLE_KEY` só para seed/servidor. `NEXT_PUBLIC_SITE_URL` para sitemap/OG.

@@ -3,34 +3,21 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import {
   Check,
   Trash2,
   Quote,
   Clock,
-  User,
   MessageSquare,
   CheckCircle2,
   AlertCircle,
   Loader2,
 } from "lucide-react";
 
-type Testimonial = {
-  id: number;
-  client_name: string;
-  text: string;
-  is_approved: boolean;
-  created_at: string;
-};
+import type { Testimonial } from "@/lib/types";
+import { getErrorMessage } from "@/lib/utils";
 
 export default function TestimonialsManager() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
@@ -41,10 +28,6 @@ export default function TestimonialsManager() {
     text: string;
   } | null>(null);
 
-  useEffect(() => {
-    fetchTestimonials();
-  }, []);
-
   const fetchTestimonials = async () => {
     try {
       const { data, error } = await supabase
@@ -53,16 +36,22 @@ export default function TestimonialsManager() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setTestimonials(data || []);
-    } catch (error: any) {
+      setTestimonials((data as Testimonial[] | null) ?? []);
+    } catch (error: unknown) {
       setMessage({
         type: "error",
-        text: `Erro ao carregar depoimentos: ${error.message}`,
+        text: `Erro ao carregar depoimentos: ${getErrorMessage(error)}`,
       });
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Carga inicial dos dados na montagem (cliente Supabase no browser)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchTestimonials();
+  }, []);
 
   const handleApprove = async (id: number) => {
     setActionLoading(id);
@@ -81,10 +70,10 @@ export default function TestimonialsManager() {
         type: "success",
         text: "Depoimento aprovado com sucesso! Ele já está visível no site.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage({
         type: "error",
-        text: `Falha na aprovação: ${error.message}`,
+        text: `Falha na aprovação: ${getErrorMessage(error)}`,
       });
     } finally {
       setActionLoading(null);
@@ -110,8 +99,11 @@ export default function TestimonialsManager() {
 
       setTestimonials((prev) => prev.filter((t) => t.id !== id));
       setMessage({ type: "success", text: "Depoimento removido do sistema." });
-    } catch (error: any) {
-      setMessage({ type: "error", text: `Falha ao excluir: ${error.message}` });
+    } catch (error: unknown) {
+      setMessage({
+        type: "error",
+        text: `Falha ao excluir: ${getErrorMessage(error)}`,
+      });
     } finally {
       setActionLoading(null);
     }
@@ -213,7 +205,19 @@ export default function TestimonialsManager() {
   );
 }
 
-function TestimonialCard({ testimonial, onApprove, onDelete, loading }: any) {
+interface TestimonialCardProps {
+  testimonial: Testimonial;
+  onApprove?: (id: number) => void;
+  onDelete: (id: number) => void;
+  loading: boolean;
+}
+
+function TestimonialCard({
+  testimonial,
+  onApprove,
+  onDelete,
+  loading,
+}: TestimonialCardProps) {
   const isPending = !testimonial.is_approved;
 
   return (
@@ -224,7 +228,7 @@ function TestimonialCard({ testimonial, onApprove, onDelete, loading }: any) {
         <div className="relative">
           <Quote className="absolute -top-4 -left-4 h-8 w-8 text-[#87381e]/10" />
           <blockquote className="text-lg md:text-xl font-serif font-light leading-relaxed text-[#2e3d30] relative z-10 italic">
-            "{testimonial.text}"
+            &quot;{testimonial.text}&quot;
           </blockquote>
         </div>
 

@@ -161,3 +161,27 @@ CREATE POLICY "Allow authenticated update on orcamento_solicitacoes"
 CREATE POLICY "Allow authenticated delete on orcamento_solicitacoes"
   ON orcamento_solicitacoes FOR DELETE
   USING (auth.role() = 'authenticated');
+
+-- ============================================================
+-- Policies de admin (espelha supabase/migrations/2026-11-11-admin-policies.sql)
+-- ============================================================
+
+CREATE POLICY "Allow authenticated read all on testimonials"
+  ON testimonials FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Allow authenticated delete on testimonials"
+  ON testimonials FOR DELETE
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Allow authenticated delete on projects"
+  ON projects FOR DELETE
+  USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Allow authenticated update project images"
+  ON storage.objects FOR UPDATE
+  USING (bucket_id = 'project-images' AND auth.role() = 'authenticated');
+
+CREATE POLICY "Allow authenticated delete project images"
+  ON storage.objects FOR DELETE
+  USING (bucket_id = 'project-images' AND auth.role() = 'authenticated');

@@ -1,72 +1,54 @@
 # Milar Arquitetura
 
-Portfolio and lead-generation website for architect Giovanna Lima, focusing on neuroarchitecture and minimalist design.
+Site de portfólio e captação da arquiteta Giovanna Lima, com foco em neuroarquitetura.
 
-## Features
+## Funcionalidades
 
-- **Home Page**: Hero section, about, testimonials
-- **Portfolio**: Editorial grid of projects with masonry layout
-- **Curriculum**: Education, experience, and skills timeline
-- **Budget Simulator**: Multi‑step form with mock authentication and API integration
-- **Responsive Design**: Mobile‑first, Tailwind CSS
-- **UI Components**: Shadcn/ui with custom neutral palette
-- **WhatsApp Integration**: Floating contact button
-- **Editorial Typography**: Playfair Display headings, Inter body
+- **Home**: hero, apresentação da arquiteta e depoimentos aprovados (com formulário público)
+- **Portfólio**: projetos paginados com carrossel de fotos, ordem definida no painel
+- **Painel admin** (`/admin`): gestão de projetos (upload, edição, ordenação por arrastar) e moderação de depoimentos
+- **WhatsApp**: botão flutuante de contato
+- **SEO**: metadata, Open Graph, `sitemap.xml` e `robots.txt`
 
-## Tech Stack
+## Stack
 
-- **Framework**: Next.js 14 (App Router)
-- **Styling**: Tailwind CSS v4
-- **Components**: Shadcn/ui (Base UI)
-- **Icons**: Lucide React
-- **Fonts**: Google Fonts (Inter, Playfair Display)
-- **Backend**: Next.js API Routes (simulated Supabase/Resend)
+- Next.js 16 (App Router) + TypeScript
+- Tailwind CSS v4 + Shadcn UI (base: `@base-ui/react`)
+- Supabase (auth, banco, storage) via `@supabase/ssr`
+- Lucide React
 
-## Getting Started
+## Como rodar
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Copy `.env.example` to `.env.local` and fill in your keys (optional for simulation)
-4. Run the development server:
-   ```bash
-   npm run dev
-   ```
-5. Open [http://localhost:3000](http://localhost:3000)
-
-## Project Structure
-
-```
-app/
-├── api/simulacao/         # Budget simulation endpoint
-├── portfolio/             # Portfolio page
-├── curriculum/            # CV page
-├── simulador/             # Multi‑step simulator
-├── layout.tsx             # Root layout with fonts, header, footer
-├── page.tsx               # Home page
-components/
-├── layout/                # Header, Footer
-├── ui/                    # Shadcn components
-public/                    # Static assets
+```bash
+npm install
+cp .env.example .env.local   # preencha as chaves do Supabase
+npm run dev
 ```
 
-## Design Guidelines
+Abra [http://localhost:3000](http://localhost:3000). Configuração do Supabase em [SETUP.md](SETUP.md).
 
-- **Colors**: Neutral palette (whites, off‑whites, soft stones, deep charcoal)
-- **Typography**: Playfair Display for headings, Inter for body
-- **Layout**: Asymmetric grids, abundant whitespace, large image placeholders
-- **Inspiration**: Yellowtrace, Casa de Valentina
+## Scripts
 
-## Future Enhancements
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Build de produção |
+| `npm run typecheck` | Checagem de tipos (`tsc --noEmit`) |
+| `npm run lint` | ESLint |
+| `npm run seed` | Popula projetos e depoimentos de exemplo |
 
-- Integrate Supabase Auth and database
-- Connect Resend for email notifications
-- Add a blog/news section
-- Implement dark/light mode toggle
-- Add project filtering by category
+## Estrutura
 
-## License
+```text
+app/            rotas (/, /portfolio, /admin, /auth/signout, sitemap, robots)
+components/     layout/ e ui/
+lib/            clientes Supabase, queries, tipos, configuração do site
+proxy.ts        proteção das rotas do painel
+supabase/       migrations SQL
+```
 
-Proprietary – All rights reserved.
+Guia para desenvolvimento com Claude Code em [CLAUDE.md](CLAUDE.md).
+
+## Licença
+
+Proprietário — todos os direitos reservados.

@@ -31,16 +31,33 @@ import {
   GripVertical,
 } from "lucide-react";
 import Image from "next/image";
+import type { Project } from "@/lib/types";
+import { getErrorMessage } from "@/lib/utils";
 
-type Project = {
-  id: number;
-  title: string;
-  description: string;
-  image_url: string;
-  image_urls: string[];
-  tags: string[];
-  display_order: number | null;
-};
+const BUCKET = "project-images";
+
+// Converte a URL pública de um arquivo do bucket no path usado pelo Storage.
+function storagePathFromUrl(url: string): string | null {
+  const marker = `/storage/v1/object/public/${BUCKET}/`;
+  const idx = url.indexOf(marker);
+  if (idx === -1) return null; // URL externa (ex.: Unsplash) — nada a remover
+  return decodeURIComponent(url.slice(idx + marker.length));
+}
+
+// Remove arquivos do bucket. Falhas viram aviso no console: não devem
+// bloquear a operação principal (o registro no banco já foi alterado).
+async function removeFromStorage(urls: string[]) {
+  const paths = urls
+    .map(storagePathFromUrl)
+    .filter((p): p is string => p !== null);
+  if (!paths.length) return;
+  const { error } = await supabase.storage.from(BUCKET).remove(paths);
+  if (error) console.warn("Falha ao limpar imagens do Storage:", error.message);
+}
+
+function projectImageUrls(project: Project): string[] {
+  return project.image_urls?.length ? project.image_urls : [project.image_url];
+}
 
 export default function PortfolioManager() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -62,10 +79,6 @@ export default function PortfolioManager() {
     text: string;
   } | null>(null);
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
   const fetchProjects = async () => {
     try {
       const { data, error } = await supabase
@@ -75,23 +88,26 @@ export default function PortfolioManager() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setProjects(data || []);
-    } catch (error: any) {
+      setProjects((data as Project[] | null) ?? []);
+    } catch (error: unknown) {
       console.error("Erro ao buscar projetos:", error);
     } finally {
       setLoadingProjects(false);
     }
   };
 
+  useEffect(() => {
+    // Carga inicial dos dados na montagem (cliente Supabase no browser)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchProjects();
+  }, []);
+
   const handleEdit = (project: Project) => {
     setEditingProject(project);
     setTitle(project.title);
     setDescription(project.description);
     setTagsInput(project.tags ? project.tags.join(", ") : "");
-    const urls = project.image_urls?.length
-      ? project.image_urls
-      : [project.image_url];
-    setExistingUrls(urls);
+    setExistingUrls(projectImageUrls(project));
     setNewFiles([]);
     setNewPreviews([]);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -140,14 +156,20 @@ export default function PortfolioManager() {
       return;
 
     try {
+      const project = projects.find((p) => p.id === id);
       const { error } = await supabase.from("projects").delete().eq("id", id);
       if (error) throw error;
+
+      if (project) await removeFromStorage(projectImageUrls(project));
 
       setProjects((prev) => prev.filter((p) => p.id !== id));
       setMessage({ type: "success", text: "Projeto removido do acervo." });
       if (editingProject?.id === id) cancelEdit();
-    } catch (error: any) {
-      setMessage({ type: "error", text: `Erro ao excluir: ${error.message}` });
+    } catch (error: unknown) {
+      setMessage({
+        type: "error",
+        text: `Erro ao excluir: ${getErrorMessage(error)}`,
+      });
     }
   };
 
@@ -164,10 +186,10 @@ export default function PortfolioManager() {
       const failed = results.find((r) => r.error);
       if (failed?.error) throw failed.error;
       setMessage({ type: "success", text: "Ordem do portfólio salva." });
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage({
         type: "error",
-        text: `Erro ao salvar ordem: ${error.message}`,
+        text: `Erro ao salvar ordem: ${getErrorMessage(error)}`,
       });
       fetchProjects();
     } finally {
@@ -232,11 +254,8 @@ export default function PortfolioManager() {
       }
 
       const allUrls = [...existingUrls, ...uploadedUrls];
-      if (!allUrls.length) {
-        allUrls.push(
-          "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80",
-        );
-      }
+      // O botão de envio já exige ao menos uma foto; esta checagem é defesa extra.
+      if (!allUrls.length) throw new Error("Adicione ao menos uma foto.");
 
       const tags = tagsInput
         .split(",")
@@ -259,6 +278,13 @@ export default function PortfolioManager() {
 
         if (updateError)
           throw new Error(`Falha ao atualizar: ${updateError.message}`);
+
+        // Fotos removidas durante a edição deixam de ocupar espaço no bucket
+        await removeFromStorage(
+          projectImageUrls(editingProject).filter(
+            (url) => !existingUrls.includes(url),
+          ),
+        );
         setMessage({
           type: "success",
           text: "Projeto atualizado com sucesso!",
@@ -278,8 +304,8 @@ export default function PortfolioManager() {
 
       fetchProjects();
       cancelEdit();
-    } catch (error: any) {
-      setMessage({ type: "error", text: error.message });
+    } catch (error: unknown) {
+      setMessage({ type: "error", text: getErrorMessage(error) });
     } finally {
       setLoading(false);
     }

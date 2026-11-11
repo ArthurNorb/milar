@@ -52,6 +52,7 @@ export default function AdminLoginPage() {
           src="/estampas/Preenchida Macro 03.png"
           alt="Fundo"
           fill
+          sizes="100vw"
           className="object-cover object-center"
           priority
         />

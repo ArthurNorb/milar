@@ -1,10 +1,7 @@
-"use client";
+import { whatsappUrl as buildWhatsappUrl } from "@/lib/site-config";
 
 export function WhatsAppButton() {
-  const phoneNumber = "5531971219701";
-  const message =
-    "Olá! Gostaria de conversar sobre um projeto com a Milar Arquitetura.";
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  const whatsappUrl = buildWhatsappUrl();
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">

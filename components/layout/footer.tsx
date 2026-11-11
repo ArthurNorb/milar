@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Instagram, Mail, Phone } from "lucide-react";
+import { siteConfig, whatsappUrl } from "@/lib/site-config";
 
 export function Footer() {
   return (
@@ -10,8 +11,8 @@ export function Footer() {
           src="/estampas/Preenchida Macro 04.png"
           alt="Textura de fundo"
           fill
+          sizes="100vw"
           className="object-cover object-center"
-          priority
         />
       </div>
 
@@ -33,8 +34,8 @@ export function Footer() {
             </p>
             <div className="pt-2">
               <p className="text-[10px] font-['Spartan'] tracking-widest uppercase text-[#756d47] leading-relaxed">
-                Arquiteta Giovanna Lima <br />
-                CAU: A264844-0
+                Arquiteta {siteConfig.architect} <br />
+                CAU: {siteConfig.cau}
               </p>
             </div>
           </div>
@@ -67,7 +68,7 @@ export function Footer() {
             </h4>
             <div className="flex flex-col gap-5">
               <a
-                href="https://wa.me/5531971219701"
+                href={whatsappUrl("")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-4 text-sm text-[#e3d9ce]/80 hover:text-[#e3d9ce] transition-colors group"
@@ -76,24 +77,24 @@ export function Footer() {
                   <Phone className="h-4 w-4" />
                 </div>
                 <span className="font-light tracking-wide">
-                  (31) 97121-9701
+                  {siteConfig.phoneDisplay}
                 </span>
               </a>
 
               <a
-                href="mailto:gioarqt.1@gmail.com"
+                href={`mailto:${siteConfig.email}`}
                 className="inline-flex items-center gap-4 text-sm text-[#e3d9ce]/80 hover:text-[#e3d9ce] transition-colors group"
               >
                 <div className="w-10 h-10 rounded-full border border-[#756d47] flex items-center justify-center group-hover:bg-[#87381e] group-hover:border-[#87381e] transition-all duration-300">
                   <Mail className="h-4 w-4" />
                 </div>
                 <span className="font-light tracking-wide">
-                  gioarqt.1@gmail.com
+                  {siteConfig.email}
                 </span>
               </a>
 
               <a
-                href="https://www.instagram.com/milar.arq/"
+                href={siteConfig.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-4 text-sm text-[#e3d9ce]/80 hover:text-[#e3d9ce] transition-colors group"
@@ -101,7 +102,9 @@ export function Footer() {
                 <div className="w-10 h-10 rounded-full border border-[#756d47] flex items-center justify-center group-hover:bg-[#87381e] group-hover:border-[#87381e] transition-all duration-300">
                   <Instagram className="h-4 w-4" />
                 </div>
-                <span className="font-light tracking-wide">@milar.arq</span>
+                <span className="font-light tracking-wide">
+                  {siteConfig.instagramHandle}
+                </span>
               </a>
             </div>
           </div>
