@@ -113,7 +113,9 @@ export function Footer() {
         <div className="mt-20 pt-8 border-t border-[#756d47]/30 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-['Spartan'] text-[#756d47] uppercase tracking-widest">
           <div className="text-center md:text-left">
             <p>&copy; {new Date().getFullYear()} Milar Arquitetura.</p>
-            <p className="text-[#a39f86] mt-1">Belo Horizonte, MG</p>
+            <p className="text-[#a39f86] mt-1">
+              Sediada em {siteConfig.baseCity} · {siteConfig.serviceArea}
+            </p>
           </div>
         </div>
       </div>

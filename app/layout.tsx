@@ -21,7 +21,7 @@ const spartan = League_Spartan({
 
 const title = "Milar Arquitetura | Giovanna Lima";
 const description =
-  "Design que toca o coração e transforma. Estética e Neuroarquitetura por Giovanna Lima.";
+  "Design que toca o coração e transforma. Estética e Neuroarquitetura por Giovanna Lima, com projetos presenciais e online no Brasil e no exterior.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
