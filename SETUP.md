@@ -53,3 +53,13 @@ E o segredo da sessão com `openssl rand -base64 48`.
 - **Porta 54329 ocupada**: troque a porta em `compose.dev.yml` e em `DATABASE_URL`.
 - **Login não funciona depois de editar o `.env.development.local`**: reinicie o `./run`.
 - **Erro de upload**: fotos até 15 MB; formatos JPG, PNG, WebP, AVIF e HEIC.
+
+## Postgres em VPS pequena
+
+Para o container de produção, flags que mantêm o consumo baixo (o site tem só duas tabelas pequenas):
+
+```text
+postgres -c shared_buffers=128MB -c max_connections=20 -c work_mem=4MB
+```
+
+O pool da aplicação (`lib/db/index.ts`) usa no máximo 5 conexões e fecha as ociosas. Inclua o volume do banco **e** `UPLOADS_DIR` no backup.

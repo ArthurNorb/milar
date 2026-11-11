@@ -46,7 +46,7 @@ async function compressForUpload(file: File): Promise<File> {
   if (!file.type.startsWith("image/")) return file;
   try {
     return await imageCompression(file, {
-      maxWidthOrHeight: 2560,
+      maxWidthOrHeight: 1920,
       maxSizeMB: 4,
       initialQuality: 0.85,
       useWebWorker: true,

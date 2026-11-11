@@ -12,7 +12,7 @@ const INTERVAL_MS = 6000;
 export default function TestimonialsCarousel({
   testimonials,
 }: {
-  testimonials: Testimonial[];
+  testimonials: Pick<Testimonial, "id" | "client_name" | "text">[];
 }) {
   const slider = useAutoSlider(
     testimonials.length,

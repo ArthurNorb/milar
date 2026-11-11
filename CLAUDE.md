@@ -54,7 +54,7 @@ Dev: requer Docker. Login do admin em dev: `admin@milar.local` / `milar-dev`.
 - **Tailwind CSS v4** + **Shadcn UI** sobre `@base-ui/react` (NÃO Radix)
 - **Postgres 17** + **Drizzle ORM** (`postgres.js`)
 - **Auth própria**: cookie JWT assinado (`jose`), senha com scrypt
-- **Imagens**: upload → `sharp` (WebP, 2560px, sem EXIF) → disco em `UPLOADS_DIR`
+- **Imagens**: upload → `sharp` (WebP, 1920px, sem EXIF) → disco em `UPLOADS_DIR`
 - **Lucide React** para ícones
 
 ## Mapa do Projeto

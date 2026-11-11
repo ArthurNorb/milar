@@ -1,11 +1,12 @@
 "use server";
 
 import { asc, desc, eq, sql } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { projects, testimonials } from "@/lib/db/schema";
 import { deleteUploadedImages } from "@/lib/images";
+import { CACHE_TAGS } from "@/lib/queries";
 import type { Project, Testimonial } from "@/lib/types";
 import { getErrorMessage } from "@/lib/utils";
 
@@ -18,8 +19,15 @@ function fail(error: unknown): { ok: false; error: string } {
 }
 
 function revalidatePublicPages() {
+  // updateTag expira o cache de dados na hora (o admin vê a mudança já).
+  updateTag(CACHE_TAGS.projects);
   revalidatePath("/");
   revalidatePath("/projetos");
+}
+
+function revalidateTestimonials() {
+  updateTag(CACHE_TAGS.testimonials);
+  revalidatePath("/");
 }
 
 // ---------- Projetos ----------
@@ -165,7 +173,7 @@ export async function approveTestimonial(id: number): Promise<ActionResult> {
       .update(testimonials)
       .set({ is_approved: true })
       .where(eq(testimonials.id, id));
-    revalidatePath("/");
+    revalidateTestimonials();
     return { ok: true, data: undefined };
   } catch (error: unknown) {
     return fail(error);
@@ -176,7 +184,7 @@ export async function deleteTestimonial(id: number): Promise<ActionResult> {
   try {
     await requireAdmin();
     await db.delete(testimonials).where(eq(testimonials.id, id));
-    revalidatePath("/");
+    revalidateTestimonials();
     return { ok: true, data: undefined };
   } catch (error: unknown) {
     return fail(error);

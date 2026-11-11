@@ -6,7 +6,7 @@ import sharp from "sharp";
 
 export const UPLOADS_URL_PREFIX = "/uploads/";
 export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
-const MAX_DIMENSION = 2560;
+export const MAX_DIMENSION = 1920;
 const ALLOWED_MIME = new Set([
   "image/jpeg",
   "image/png",
@@ -33,7 +33,7 @@ export function isAllowedMime(mime: string): boolean {
 
 /**
  * Normaliza a foto: aplica a rotação do EXIF, remove metadados (GPS), limita
- * a 2560px no maior lado e converte para WebP. Retorna a URL pública.
+ * a 1920px no maior lado e converte para WebP. Retorna a URL pública.
  */
 export async function saveProjectImage(input: Buffer): Promise<string> {
   const output = await sharp(input)
@@ -44,7 +44,7 @@ export async function saveProjectImage(input: Buffer): Promise<string> {
       fit: "inside",
       withoutEnlargement: true,
     })
-    .webp({ quality: 80 })
+    .webp({ quality: 78, effort: 5 })
     .toBuffer();
 
   const relative = path.posix.join("projects", `${randomUUID()}.webp`);

@@ -1,4 +1,6 @@
-import { readFile } from "node:fs/promises";
+import { createReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
+import { Readable } from "node:stream";
 import { NextResponse } from "next/server";
 import { resolveUploadPath } from "@/lib/images";
 
@@ -20,10 +22,15 @@ export async function GET(
   if (!full) return new NextResponse("Not found", { status: 404 });
 
   try {
-    const file = await readFile(full);
-    return new NextResponse(new Uint8Array(file), {
+    const info = await stat(full);
+    if (!info.isFile()) return new NextResponse("Not found", { status: 404 });
+
+    // Stream: o arquivo não é carregado inteiro na memória.
+    const body = Readable.toWeb(createReadStream(full)) as ReadableStream;
+    return new NextResponse(body, {
       headers: {
         "Content-Type": "image/webp",
+        "Content-Length": String(info.size),
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     });

@@ -41,7 +41,7 @@ app/uploads/[...path]/route.ts   # GET das fotos (só .webp, cache imutável)
 - Cookie `milar_session`: httpOnly, sameSite=lax, secure em produção, 7 dias.
 
 ## Imagens
-- Navegador reduz (`browser-image-compression`, 2560px) → `POST /api/admin/uploads` → `saveProjectImage` (rotate EXIF, sem metadados, 2560px, WebP q80) → URL `/uploads/projects/<uuid>.webp`.
+- Navegador reduz (`browser-image-compression`, 1920px) → `POST /api/admin/uploads` → `saveProjectImage` (rotate EXIF, sem metadados, 1920px, WebP q78) → URL `/uploads/projects/<uuid>.webp`.
 - Remover foto de projeto ou excluir projeto → `deleteUploadedImages(urls)` (ignora URLs externas, ex.: Unsplash do seed).
 - Pasta: `UPLOADS_DIR` (dev: `./.data/uploads`). Em produção, monte como volume e inclua no backup.
 - `next/image` com `fill` exige `sizes`; fotos novas são `/uploads/...` (local, sem `remotePatterns`).
