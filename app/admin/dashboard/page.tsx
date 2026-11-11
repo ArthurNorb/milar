@@ -4,11 +4,12 @@ import { Suspense } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PortfolioManager from "./portfolio-manager";
 import TestimonialsManager from "./testimonials-manager";
-import { FolderKanban, MessageSquare } from "lucide-react";
+import BlogManager from "./blog-manager";
+import { FolderKanban, MessageSquare, Newspaper } from "lucide-react";
 
-type Tab = "portfolio" | "testimonials";
+type Tab = "portfolio" | "testimonials" | "blog";
 
-const TABS: readonly Tab[] = ["portfolio", "testimonials"];
+const TABS: readonly Tab[] = ["portfolio", "testimonials", "blog"];
 
 function isTab(value: string | null): value is Tab {
   return TABS.includes(value as Tab);
@@ -64,6 +65,12 @@ function AdminDashboard() {
             icon={<MessageSquare className="w-4 h-4" />}
             label="Depoimentos"
           />
+          <TabButton
+            active={activeTab === "blog"}
+            onClick={() => setActiveTab("blog")}
+            icon={<Newspaper className="w-4 h-4" />}
+            label="Blog"
+          />
         </div>
       </div>
 
@@ -71,6 +78,7 @@ function AdminDashboard() {
         <div className="relative z-10 p-6 md:p-10 animate-in fade-in zoom-in-95 duration-500">
           {activeTab === "portfolio" && <PortfolioManager />}
           {activeTab === "testimonials" && <TestimonialsManager />}
+          {activeTab === "blog" && <BlogManager />}
         </div>
       </div>
     </div>

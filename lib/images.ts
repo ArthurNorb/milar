@@ -16,6 +16,14 @@ const ALLOWED_MIME = new Set([
   "image/heif",
 ]);
 
+/** Subpastas de UPLOADS_DIR aceitas no upload. */
+export const UPLOAD_FOLDERS = ["projects", "blog"] as const;
+export type UploadFolder = (typeof UPLOAD_FOLDERS)[number];
+
+export function isUploadFolder(value: unknown): value is UploadFolder {
+  return UPLOAD_FOLDERS.includes(value as UploadFolder);
+}
+
 export function getUploadsDir(): string {
   return path.resolve(process.cwd(), process.env.UPLOADS_DIR ?? "./.data/uploads");
 }
@@ -35,7 +43,10 @@ export function isAllowedMime(mime: string): boolean {
  * Normaliza a foto: aplica a rotação do EXIF, remove metadados (GPS), limita
  * a 1920px no maior lado e converte para WebP. Retorna a URL pública.
  */
-export async function saveProjectImage(input: Buffer): Promise<string> {
+export async function saveProjectImage(
+  input: Buffer,
+  folder: UploadFolder = "projects",
+): Promise<string> {
   const output = await sharp(input)
     .rotate()
     .resize({
@@ -47,7 +58,7 @@ export async function saveProjectImage(input: Buffer): Promise<string> {
     .webp({ quality: 78, effort: 5 })
     .toBuffer();
 
-  const relative = path.posix.join("projects", `${randomUUID()}.webp`);
+  const relative = path.posix.join(folder, `${randomUUID()}.webp`);
   const full = resolveUploadPath(relative);
   if (!full) throw new Error("Caminho de upload inválido.");
 

@@ -16,3 +16,17 @@ export interface Testimonial {
   is_approved: boolean;
   created_at: string;
 }
+
+export interface Post {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string;
+  category: string | null;
+  cover_image_url: string;
+  content_html: string;
+  is_published: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}

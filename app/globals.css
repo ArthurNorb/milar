@@ -179,3 +179,87 @@
     scrollbar-width: none;
   }
 }
+/* Corpo dos artigos do blog (HTML do editor). Usado no site e no editor do admin. */
+@layer components {
+  .post-content {
+    color: rgb(46 61 48 / 0.85);
+    font-weight: 300;
+    font-size: 1.0625rem;
+    line-height: 1.8;
+  }
+  .post-content > * + * {
+    margin-top: 1.25em;
+  }
+  .post-content h2,
+  .post-content h3 {
+    font-family: var(--font-playfair), serif;
+    font-weight: 400;
+    color: #2e3d30;
+    line-height: 1.25;
+    margin-top: 2em;
+  }
+  .post-content h2 {
+    font-size: 1.875rem;
+  }
+  .post-content h3 {
+    font-size: 1.5rem;
+  }
+  .post-content strong {
+    font-weight: 600;
+    color: #2e3d30;
+  }
+  .post-content a {
+    color: #87381e;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .post-content a:hover {
+    color: #2e3d30;
+  }
+  .post-content ul,
+  .post-content ol {
+    padding-left: 1.5em;
+  }
+  .post-content ul {
+    list-style: disc;
+  }
+  .post-content ol {
+    list-style: decimal;
+  }
+  .post-content li + li {
+    margin-top: 0.5em;
+  }
+  .post-content li::marker {
+    color: #87381e;
+  }
+  .post-content blockquote {
+    border-left: 2px solid #bfa086;
+    padding-left: 1.25em;
+    font-family: var(--font-playfair), serif;
+    font-style: italic;
+    font-size: 1.25rem;
+    color: #756d47;
+  }
+  .post-content img {
+    width: 100%;
+    height: auto;
+    border: 1px solid rgb(46 61 48 / 0.1);
+    margin-top: 2em;
+    margin-bottom: 2em;
+  }
+  .post-content hr {
+    border: 0;
+    height: 1px;
+    width: 3rem;
+    background: #bfa086;
+    margin: 2.5em 0;
+  }
+  @media (min-width: 768px) {
+    .post-content {
+      font-size: 1.125rem;
+    }
+    .post-content h2 {
+      font-size: 2.25rem;
+    }
+  }
+}

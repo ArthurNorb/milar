@@ -3,7 +3,7 @@
 import { count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { projects, testimonials } from "../lib/db/schema";
+import { posts, projects, testimonials } from "../lib/db/schema";
 
 const url = process.env.DATABASE_URL;
 
@@ -141,10 +141,52 @@ async function seedTestimonials() {
   console.log(`Depoimentos inseridos: ${rows.length}`);
 }
 
+async function seedPosts() {
+  const [{ total }] = await db.select({ total: count() }).from(posts);
+  if (total > 0) {
+    console.log("Artigos já existem, pulando.");
+    return;
+  }
+
+  const now = Date.now();
+  const rows = [
+    {
+      slug: "neuroarquitetura-o-que-e",
+      title: "Neuroarquitetura: como a casa influencia o seu bem-estar",
+      excerpt:
+        "Luz, cores, materiais e a forma dos ambientes mexem com o humor, o sono e a concentração. Entenda o básico antes de começar o seu projeto.",
+      category: "Antes de começar",
+      cover_image_url:
+        "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1600&q=80",
+      content_html:
+        "<p>A neuroarquitetura estuda como o espaço construído afeta o cérebro e o comportamento. Na prática, ela ajuda a desenhar ambientes que acolhem a rotina de quem vive ali.</p><h2>Comece pela sua rotina</h2><p>Antes de pensar em acabamentos, observe como você usa cada cômodo ao longo do dia.</p><ul><li>Onde você descansa de verdade?</li><li>Em que horário a luz natural entra em cada ambiente?</li><li>Quais espaços geram tensão ou bagunça?</li></ul><h2>Luz e cor</h2><p>Luz quente à noite favorece o descanso; tons terrosos trazem sensação de acolhimento.</p><blockquote>Uma casa bem pensada cuida de você mesmo quando você não está prestando atenção nela.</blockquote>",
+      is_published: true,
+      published_at: new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      slug: "reforma-de-apartamento-o-que-definir-antes",
+      title: "Reforma de apartamento: o que definir antes da obra?",
+      excerpt:
+        "Prioridades, orçamento e prazos: as decisões que evitam retrabalho e deixam a reforma mais tranquila.",
+      category: "Custos e orçamentos",
+      cover_image_url:
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1600&q=80",
+      content_html:
+        "<p>Uma reforma bem planejada começa muito antes da primeira parede ser quebrada.</p><h2>Defina o investimento pensando na casa pronta</h2><p>Inclua no orçamento mobiliário, iluminação e uma reserva para imprevistos.</p><h2>O que levar para a primeira conversa?</h2><ol><li>Planta do apartamento (se tiver).</li><li>Fotos dos ambientes atuais.</li><li>Referências do que você gosta e do que não gosta.</li></ol>",
+      is_published: true,
+      published_at: new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+  ];
+
+  await db.insert(posts).values(rows);
+  console.log(`Artigos inseridos: ${rows.length}`);
+}
+
 async function main() {
   console.log("Iniciando seed...");
   await seedProjects();
   await seedTestimonials();
+  await seedPosts();
   console.log("Seed concluído!");
 }
 

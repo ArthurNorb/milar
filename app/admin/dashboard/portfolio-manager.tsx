@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import imageCompression from "browser-image-compression";
 import {
   deleteProject,
   listProjects,
@@ -39,37 +38,7 @@ import {
 import Image from "next/image";
 import type { Project } from "@/lib/types";
 import { getErrorMessage } from "@/lib/utils";
-
-// Reduz a foto no navegador antes do envio (upload rápido, mesmo no 4G).
-// O servidor ainda normaliza para WebP e remove metadados.
-async function compressForUpload(file: File): Promise<File> {
-  if (!file.type.startsWith("image/")) return file;
-  try {
-    return await imageCompression(file, {
-      maxWidthOrHeight: 1920,
-      maxSizeMB: 4,
-      initialQuality: 0.85,
-      useWebWorker: true,
-    });
-  } catch {
-    return file; // formatos que o navegador não decodifica (ex.: HEIC) seguem originais
-  }
-}
-
-async function uploadImage(file: File): Promise<string> {
-  const body = new FormData();
-  body.append("file", await compressForUpload(file));
-
-  const response = await fetch("/api/admin/uploads", { method: "POST", body });
-  const json = (await response.json().catch(() => null)) as
-    | { url?: string; error?: string }
-    | null;
-
-  if (!response.ok || !json?.url) {
-    throw new Error(json?.error ?? "Falha no upload.");
-  }
-  return json.url;
-}
+import { uploadImage } from "@/lib/upload-client";
 
 function projectImageUrls(project: Project): string[] {
   return project.image_urls?.length ? project.image_urls : [project.image_url];

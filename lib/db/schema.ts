@@ -36,3 +36,25 @@ export const testimonials = pgTable("testimonials", {
     .notNull()
     .defaultNow(),
 });
+
+export const posts = pgTable(
+  "posts",
+  {
+    id: bigint("id", { mode: "number" }).generatedByDefaultAsIdentity().primaryKey(),
+    slug: text("slug").notNull().unique(),
+    title: text("title").notNull(),
+    excerpt: text("excerpt").notNull(),
+    category: text("category"),
+    cover_image_url: text("cover_image_url").notNull(),
+    content_html: text("content_html").notNull().default(""),
+    is_published: boolean("is_published").notNull().default(false),
+    published_at: timestamp("published_at", { withTimezone: true, mode: "string" }),
+    created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("posts_published_idx").on(table.is_published, table.published_at)],
+);

@@ -106,7 +106,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="py-20 md:py-40 relative z-10 overflow-hidden">
+      <section id="sobre" className="scroll-mt-20 py-20 md:py-40 relative z-10 overflow-hidden">
         <div className="absolute inset-0 z-0 opacity-[0.04] pointer-events-none">
           <Image
             src="/estampas/Contorno Macro 04.png"
@@ -217,7 +217,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="py-20 md:py-32 bg-[#2e3d30] text-[#e3d9ce] relative rounded-t-[2.5rem] md:rounded-t-[5rem]">
+      <section id="feedbacks" className="scroll-mt-20 py-20 md:py-32 bg-[#2e3d30] text-[#e3d9ce] relative rounded-t-[2.5rem] md:rounded-t-[5rem]">
         <div className="container max-w-7xl px-5 md:px-12 mx-auto relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-20 gap-6 md:gap-8 border-b border-[#e3d9ce]/20 pb-8 md:pb-12">
             <div className="space-y-3 md:space-y-4 max-w-2xl">

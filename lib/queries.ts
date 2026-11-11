@@ -1,8 +1,8 @@
-import { asc, count, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
-import { projects, testimonials } from "@/lib/db/schema";
-import type { Project, Testimonial } from "@/lib/types";
+import { posts, projects, testimonials } from "@/lib/db/schema";
+import type { Post, Project, Testimonial } from "@/lib/types";
 
 export const PROJECTS_PER_PAGE = 5;
 export const HOME_PROJECTS_LIMIT = 12;
@@ -11,6 +11,7 @@ export const HOME_PROJECTS_LIMIT = 12;
 export const CACHE_TAGS = {
   projects: "projects",
   testimonials: "testimonials",
+  posts: "posts",
 } as const;
 
 export type PublicTestimonial = Pick<Testimonial, "id" | "client_name" | "text">;
@@ -116,6 +117,98 @@ export async function getHomeProjects(): Promise<HomeProject[]> {
     return await cachedHomeProjects();
   } catch (error: unknown) {
     console.error("Erro ao buscar projetos da home:", error);
+    return [];
+  }
+}
+
+// ---------- Blog ----------
+
+export const POSTS_PER_PAGE = 9;
+
+export type PostListItem = Pick<
+  Post,
+  "id" | "slug" | "title" | "excerpt" | "category" | "cover_image_url" | "published_at"
+>;
+
+const cachedPostsPage = unstable_cache(
+  async (page: number) => {
+    const [rows, [{ total }]] = await Promise.all([
+      db
+        .select({
+          id: posts.id,
+          slug: posts.slug,
+          title: posts.title,
+          excerpt: posts.excerpt,
+          category: posts.category,
+          cover_image_url: posts.cover_image_url,
+          published_at: posts.published_at,
+        })
+        .from(posts)
+        .where(eq(posts.is_published, true))
+        .orderBy(desc(posts.published_at), desc(posts.id))
+        .limit(POSTS_PER_PAGE)
+        .offset((page - 1) * POSTS_PER_PAGE),
+      db.select({ total: count() }).from(posts).where(eq(posts.is_published, true)),
+    ]);
+
+    return {
+      posts: rows as PostListItem[],
+      total,
+      totalPages: total ? Math.ceil(total / POSTS_PER_PAGE) : 1,
+    };
+  },
+  ["posts-page"],
+  { tags: [CACHE_TAGS.posts] },
+);
+
+export async function getPublishedPostsPage(
+  page: number,
+): Promise<{ posts: PostListItem[]; total: number; totalPages: number }> {
+  try {
+    return await cachedPostsPage(page);
+  } catch (error: unknown) {
+    console.error("Erro ao buscar artigos:", error);
+    return { posts: [], total: 0, totalPages: 1 };
+  }
+}
+
+const cachedPostBySlug = unstable_cache(
+  async (slug: string): Promise<Post | null> => {
+    const [row] = await db
+      .select()
+      .from(posts)
+      .where(and(eq(posts.slug, slug), eq(posts.is_published, true)))
+      .limit(1);
+    return row ?? null;
+  },
+  ["post-by-slug"],
+  { tags: [CACHE_TAGS.posts] },
+);
+
+export async function getPublishedPostBySlug(slug: string): Promise<Post | null> {
+  try {
+    return await cachedPostBySlug(slug);
+  } catch (error: unknown) {
+    console.error("Erro ao buscar artigo:", error);
+    return null;
+  }
+}
+
+const cachedPublishedSlugs = unstable_cache(
+  async () =>
+    db
+      .select({ slug: posts.slug, updated_at: posts.updated_at })
+      .from(posts)
+      .where(eq(posts.is_published, true)),
+  ["published-post-slugs"],
+  { tags: [CACHE_TAGS.posts] },
+);
+
+export async function getPublishedPostSlugs(): Promise<{ slug: string; updated_at: string }[]> {
+  try {
+    return await cachedPublishedSlugs();
+  } catch (error: unknown) {
+    console.error("Erro ao buscar slugs dos artigos:", error);
     return [];
   }
 }
