@@ -45,3 +45,29 @@ export async function getProjectsPage(
     return { projects: [], totalPages: 1 };
   }
 }
+
+export const HOME_PROJECTS_LIMIT = 12;
+
+export async function getHomeProjects(): Promise<
+  Pick<Project, "id" | "title" | "image_url" | "image_urls">[]
+> {
+  try {
+    return await db
+      .select({
+        id: projects.id,
+        title: projects.title,
+        image_url: projects.image_url,
+        image_urls: projects.image_urls,
+      })
+      .from(projects)
+      .orderBy(
+        sql`${projects.display_order} asc nulls last`,
+        desc(projects.created_at),
+        asc(projects.id),
+      )
+      .limit(HOME_PROJECTS_LIMIT);
+  } catch (error: unknown) {
+    console.error("Erro ao buscar projetos da home:", error);
+    return [];
+  }
+}

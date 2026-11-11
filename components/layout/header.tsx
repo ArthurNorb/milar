@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { whatsappUrl } from "@/lib/site-config";
+import { siteConfig } from "@/lib/site-config";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
   { label: "Início", href: "/" },
-  { label: "Portfólio", href: "/portfolio" },
+  { label: "Projetos", href: "/projetos" },
 ];
 
 export function Header() {
@@ -41,7 +41,7 @@ export function Header() {
           <Button
             render={
               <a
-                href={whatsappUrl()}
+                href={siteConfig.projectFormUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center px-6 sm:px-8 font-['Spartan'] uppercase text-[10px] sm:text-xs tracking-widest"

@@ -1,4 +1,4 @@
-export default function PortfolioLoading() {
+export default function ProjectsLoading() {
   return (
     <div className="flex flex-col min-h-screen bg-[#e3d9ce] overflow-hidden pt-28 pb-20 md:pt-40 md:pb-32">
       <div className="container max-w-screen-2xl px-6 md:px-12 mx-auto">

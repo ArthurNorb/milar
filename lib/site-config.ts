@@ -10,6 +10,7 @@ export const siteConfig = {
     "Olá! Gostaria de conversar sobre um projeto com a Milar Arquitetura.",
   instagramHandle: "@milar.arq",
   instagramUrl: "https://www.instagram.com/milar.arq/",
+  projectFormUrl: "https://form.respondi.app/2jLizTkt",
 } as const;
 
 /** Link do WhatsApp. Passe `""` para abrir a conversa sem mensagem pré-preenchida. */

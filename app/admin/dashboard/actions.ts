@@ -19,7 +19,7 @@ function fail(error: unknown): { ok: false; error: string } {
 
 function revalidatePublicPages() {
   revalidatePath("/");
-  revalidatePath("/portfolio");
+  revalidatePath("/projetos");
 }
 
 // ---------- Projetos ----------

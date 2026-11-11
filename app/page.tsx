@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Quote, ArrowRight, PenLine } from "lucide-react";
+import { ArrowRight, PenLine } from "lucide-react";
 import Link from "next/link";
-import { whatsappUrl } from "@/lib/site-config";
+import { siteConfig } from "@/lib/site-config";
 import Image from "next/image";
-import { getApprovedTestimonials } from "@/lib/queries";
+import { getApprovedTestimonials, getHomeProjects } from "@/lib/queries";
+import HomeProjectsCarousel from "@/components/home-projects-carousel";
+import TestimonialsCarousel from "@/components/testimonials-carousel";
 import TestimonialForm from "@/components/testimonial-form";
 import {
   Dialog,
@@ -16,7 +17,10 @@ import {
 } from "@/components/ui/dialog";
 
 export default async function HomePage() {
-  const testimonials = await getApprovedTestimonials();
+  const [testimonials, homeProjects] = await Promise.all([
+    getApprovedTestimonials(),
+    getHomeProjects(),
+  ]);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#e3d9ce] text-[#2e3d30] overflow-hidden selection:bg-[#87381e] selection:text-[#e3d9ce]">
@@ -67,7 +71,7 @@ export default async function HomePage() {
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4 md:pt-6 w-full sm:w-auto">
               <Button
-                render={<a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" />}
+                render={<a href={siteConfig.projectFormUrl} target="_blank" rel="noopener noreferrer" />}
                 nativeButton={false}
                 size="lg"
                 className="w-full sm:w-auto px-8 h-14 bg-[#c3532e] hover:bg-[#c3532e]/80 text-[#e3d9ce] font-['Spartan'] text-xs tracking-wider uppercase rounded-full transition-transform hover:scale-105 duration-300 flex items-center justify-center shadow-lg"
@@ -75,7 +79,7 @@ export default async function HomePage() {
                 Solicitar Projeto <ArrowRight className="w-4 h-4" />
               </Button>
               <Button
-                render={<Link href="/portfolio" />}
+                render={<Link href="/projetos" />}
                 nativeButton={false}
                 variant="outline"
                 size="lg"
@@ -87,8 +91,8 @@ export default async function HomePage() {
           </div>
 
           <div className="lg:col-span-5 relative h-[50vh] lg:h-[75vh] w-full hidden sm:block group mt-8 lg:mt-0">
-            <div className="absolute inset-0 bg-[#c3532e] rounded-t-full transform translate-x-3 translate-y-3 md:translate-x-4 md:translate-y-4 transition-transform group-hover:translate-x-6 group-hover:translate-y-6 duration-700 ease-out z-0" />
-            <div className="relative h-full w-full rounded-t-full overflow-hidden border-4 border-[#2e3d30] shadow-2xl z-10 bg-[#bfa086]">
+            <div className="absolute inset-0 bg-[#c3532e] transform translate-x-3 translate-y-3 md:translate-x-4 md:translate-y-4 transition-transform group-hover:translate-x-6 group-hover:translate-y-6 duration-700 ease-out z-0" />
+            <div className="relative h-full w-full overflow-hidden border-4 border-[#2e3d30] shadow-2xl z-10 bg-[#bfa086]">
               <Image
                 src="/hero.png"
                 alt="Projeto Milar"
@@ -117,10 +121,10 @@ export default async function HomePage() {
           <div className="flex flex-col-reverse md:grid md:grid-cols-2 gap-12 md:gap-24 items-start">
             <div className="w-full h-full relative">
               <div className="md:sticky md:top-32 relative aspect-3/4 w-[80%] md:w-full max-w-md mx-auto group">
-                <div className="absolute inset-0 bg-[#756d47] rounded-b-full -rotate-6 transition-transform group-hover:rotate-0 duration-500" />
-                <div className="relative h-full w-full rounded-b-full overflow-hidden bg-[#a39f86] z-10 border-[6px] md:border-8 border-[#e3d9ce]">
+                <div className="absolute inset-0 bg-[#756d47] -rotate-6 transition-transform group-hover:rotate-0 duration-500" />
+                <div className="relative h-full w-full overflow-hidden bg-[#a39f86] z-10 border-[6px] md:border-8 border-[#e3d9ce]">
                   <Image
-                    src="/gi.png"
+                    src="/gi.jpeg"
                     alt="Giovanna Lima"
                     fill
                     sizes="(max-width: 768px) 80vw, 448px"
@@ -132,7 +136,7 @@ export default async function HomePage() {
                   alt=""
                   width={100}
                   height={100}
-                  className="absolute -bottom-6 -right-6 md:-bottom-10 md:-right-10 z-20 opacity-80 md:w-30"
+                  className="absolute -bottom-20 -right-6 md:-bottom-28 md:-right-10 z-20 opacity-80 md:w-30"
                 />
               </div>
             </div>
@@ -166,7 +170,7 @@ export default async function HomePage() {
 
               <div className="pt-2 md:pt-4">
                 <Button
-                  render={<Link href="/portfolio" />}
+                  render={<Link href="/projetos" />}
                   nativeButton={false}
                   variant="ghost"
                   className="p-0 hover:bg-transparent text-[#87381e] hover:text-[#2e3d30] font-['Spartan'] text-[10px] md:text-sm tracking-widest uppercase transition-colors group flex items-center gap-3 w-fit"
@@ -179,6 +183,39 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {homeProjects.length > 0 && (
+        <section className="pb-20 md:pb-32 relative z-10">
+          <div className="container max-w-7xl px-5 md:px-12 mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 md:mb-14 gap-6 border-b border-[#2e3d30]/15 pb-8">
+              <div className="space-y-3 md:space-y-4 max-w-2xl">
+                <span className="text-[10px] md:text-xs font-['Spartan'] tracking-[0.3em] uppercase text-[#87381e]">
+                  Projetos
+                </span>
+                <h2 className="text-[2.5rem] leading-tight md:text-6xl font-serif tracking-tight">
+                  Alguns dos nossos projetos
+                </h2>
+              </div>
+              <Button
+                render={<Link href="/projetos" />}
+                nativeButton={false}
+                variant="ghost"
+                className="p-0 hover:bg-transparent text-[#87381e] hover:text-[#2e3d30] font-['Spartan'] text-[10px] md:text-sm tracking-widest uppercase transition-colors group flex items-center gap-3 w-fit"
+              >
+                Ver todos
+                <span className="w-8 md:w-10 h-px bg-[#87381e] group-hover:w-16 transition-all duration-300"></span>
+              </Button>
+            </div>
+            <HomeProjectsCarousel
+              projects={homeProjects.map((project) => ({
+                id: project.id,
+                title: project.title,
+                image: project.image_urls?.[0] ?? project.image_url,
+              }))}
+            />
+          </div>
+        </section>
+      )}
 
       <section className="py-20 md:py-32 bg-[#2e3d30] text-[#e3d9ce] relative rounded-t-[2.5rem] md:rounded-t-[5rem]">
         <div className="container max-w-7xl px-5 md:px-12 mx-auto relative z-10">
@@ -225,34 +262,7 @@ export default async function HomePage() {
             </Dialog>
           </div>
 
-          <div className="flex overflow-x-auto md:grid md:grid-cols-2 gap-6 md:gap-12 lg:gap-24 snap-x snap-mandatory pb-8 md:pb-0 -mx-5 px-5 md:mx-0 md:px-0 scrollbar-hide">
-            {testimonials.map((testimonial) => (
-                <div
-                  key={testimonial.id}
-                  className="min-w-[85vw] md:min-w-0 snap-center group cursor-pointer bg-[#e3d9ce]/5 md:bg-transparent p-6 md:p-0 rounded-3xl md:rounded-none border border-[#bfa086]/10 md:border-none"
-                >
-                  <Quote className="h-8 w-8 md:h-10 md:w-10 text-[#87381e] mb-4 md:mb-6 transform transition-transform group-hover:-translate-y-2 duration-300" />
-                  <blockquote className="text-xl md:text-2xl lg:text-3xl font-serif font-light leading-snug text-[#e3d9ce] mb-6 md:mb-8">
-                    &quot;{testimonial.text}&quot;
-                  </blockquote>
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12 md:h-14 md:w-14 border-2 border-[#bfa086]">
-                      <AvatarFallback className="bg-[#2e3d30] text-[#bfa086] font-serif text-lg">
-                        {testimonial.client_name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-['Spartan'] uppercase text-[10px] md:text-xs tracking-widest text-[#bfa086]">
-                        {testimonial.client_name}
-                      </p>
-                      <p className="text-xs md:text-sm text-[#e3d9ce]/60 font-light italic mt-0.5">
-                        Cliente Milar
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-          </div>
+          <TestimonialsCarousel testimonials={testimonials} />
         </div>
       </section>
     </div>

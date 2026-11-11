@@ -186,7 +186,7 @@ export default function PortfolioManager() {
     try {
       const result = await reorderProjects(ordered.map((p) => p.id));
       if (!result.ok) throw new Error(result.error);
-      setMessage({ type: "success", text: "Ordem do portfólio salva." });
+      setMessage({ type: "success", text: "Ordem dos projetos salva." });
     } catch (error: unknown) {
       setMessage({
         type: "error",
@@ -262,7 +262,7 @@ export default function PortfolioManager() {
         type: "success",
         text: editingProject
           ? "Projeto atualizado com sucesso!"
-          : "Projeto eternizado no portfólio com sucesso!",
+          : "Projeto eternizado em Projetos com sucesso!",
       });
 
       fetchProjects();
@@ -489,7 +489,7 @@ export default function PortfolioManager() {
                       <Sparkles className="w-4 h-4" />
                       {editingProject
                         ? "Salvar Alterações"
-                        : "Publicar no Portfólio"}
+                        : "Publicar em Projetos"}
                     </div>
                   )}
                 </Button>
@@ -551,7 +551,7 @@ export default function PortfolioManager() {
         ) : projects.length === 0 ? (
           <div className="py-12 text-center rounded-[2rem] border border-dashed border-[#bfa086]/30">
             <p className="text-[#756d47] font-light italic">
-              Nenhum projeto no portfólio ainda.
+              Nenhum projeto cadastrado ainda.
             </p>
           </div>
         ) : (

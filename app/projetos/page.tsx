@@ -5,17 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { getProjectsPage } from "@/lib/queries";
 import ProjectImageCarousel from "./_components/project-image-carousel";
 
-interface PortfolioProps {
+interface ProjectsProps {
   searchParams: Promise<{ page?: string }>;
 }
 
 export const metadata: Metadata = {
-  title: "Portfólio | Milar Arquitetura",
+  title: "Projetos | Milar Arquitetura",
   description:
     "Exploração de projetos onde a neurociência encontra a estética para criar refúgios de bem-estar.",
 };
 
-export default async function PortfolioPage({ searchParams }: PortfolioProps) {
+export default async function ProjectsPage({ searchParams }: ProjectsProps) {
   const { page } = await searchParams;
 
   const parsedPage = Number(page);
@@ -53,7 +53,7 @@ export default async function PortfolioPage({ searchParams }: PortfolioProps) {
                 }`}
               >
                 {/* Bloco da Imagem (Quadrada/Retangular) */}
-                <div className="w-full lg:w-1/2 relative overflow-hidden rounded-md border border-[#2e3d30]/10 shadow-sm transition-all duration-700 group-hover:shadow-xl aspect-square md:aspect-[4/3]">
+                <div className="w-full lg:w-1/2 relative overflow-hidden rounded-none border border-[#2e3d30]/10 shadow-sm transition-all duration-700 group-hover:shadow-xl aspect-square md:aspect-[4/3]">
                   <ProjectImageCarousel
                     images={
                       project.image_urls?.length
@@ -112,7 +112,7 @@ export default async function PortfolioPage({ searchParams }: PortfolioProps) {
           <nav className="mt-32 flex justify-center items-center gap-6 md:gap-12 border-t border-[#bfa086]/30 pt-10">
             {currentPage > 1 ? (
               <Link
-                href={`/portfolio?page=${currentPage - 1}`}
+                href={`/projetos?page=${currentPage - 1}`}
                 className="text-sm font-['Spartan'] uppercase tracking-widest text-[#87381e] hover:text-[#2e3d30] transition-colors flex items-center gap-2"
               >
                 &larr; Anteriores
@@ -129,7 +129,7 @@ export default async function PortfolioPage({ searchParams }: PortfolioProps) {
 
             {currentPage < totalPages ? (
               <Link
-                href={`/portfolio?page=${currentPage + 1}`}
+                href={`/projetos?page=${currentPage + 1}`}
                 className="text-sm font-['Spartan'] uppercase tracking-widest text-[#87381e] hover:text-[#2e3d30] transition-colors flex items-center gap-2"
               >
                 Próximos &rarr;

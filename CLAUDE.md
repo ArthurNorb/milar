@@ -7,6 +7,7 @@ Site de portfólio e captação da arquiteta Giovanna Lima (neuroarquitetura). N
 - **Antes de começar qualquer tarefa**, invoque a skill `/context-mode:context-mode` (Skill `context-mode:context-mode`) e siga o roteamento dela para saídas grandes
 - **Nunca faça commit** (nem `git commit`, nem push). Quem commita é o usuário
 - **Ao terminar, sempre entregue uma mensagem de commit** sugerida, em uma linha, bem resumida, em PT-BR, com prefixo `feat:`, `fix:`, `refactor:`, `chore:` ou `doc:`
+  - **Baseie a mensagem no `git diff` real** (rode `git status --short` e `git diff --stat`, e leia o diff quando necessário), não só no que você lembra de ter feito. Ela deve cobrir tudo o que está pendente na árvore de trabalho, inclusive mudanças de tarefas anteriores ainda não commitadas
   - Exemplo: `fix: reset do formulário de depoimento após envio`
   - Se a tarefa misturar tipos, escolha o principal ou sugira uma mensagem por tipo
 
@@ -61,7 +62,7 @@ Dev: requer Docker. Login do admin em dev: `admin@milar.local` / `milar-dev`.
 ```text
 app/
   page.tsx                  # Home (SSR, depoimentos aprovados)
-  portfolio/                # SSR paginado (5/página) + carrossel de fotos
+  projetos/                 # SSR paginado (5/página) + carrossel de fotos
   actions/testimonials.ts   # Server Action pública: enviar depoimento
   admin/page.tsx            # Login (chama admin/actions.ts)
   admin/actions.ts          # login / logout

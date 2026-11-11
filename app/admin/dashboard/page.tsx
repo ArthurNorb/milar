@@ -56,7 +56,7 @@ function AdminDashboard() {
             active={activeTab === "portfolio"}
             onClick={() => setActiveTab("portfolio")}
             icon={<FolderKanban className="w-4 h-4" />}
-            label="Portfólio"
+            label="Projetos"
           />
           <TabButton
             active={activeTab === "testimonials"}

@@ -47,8 +47,8 @@ export function Footer() {
             <nav className="flex flex-col gap-4">
               {[
                 { name: "Início", path: "/" },
-                { name: "Portfólio", path: "/portfolio" },
-                { name: "Quero um Projeto", path: whatsappUrl() },
+                { name: "Projetos", path: "/projetos" },
+                { name: "Quero um Projeto", path: siteConfig.projectFormUrl },
               ].map((link) => (
                 <Link
                   key={link.name}
@@ -114,24 +114,6 @@ export function Footer() {
           <div className="text-center md:text-left">
             <p>&copy; {new Date().getFullYear()} Milar Arquitetura.</p>
             <p className="text-[#a39f86] mt-1">Belo Horizonte, MG</p>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <p className="text-[#a39f86] mb-2">Desenvolvido por</p>
-            <a
-              href="https://www.weblito.tech/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Image
-                src="/WEBLITOTECH.png"
-                alt="WebLito.tech"
-                width={120}
-                height={40}
-                style={{ width: "auto", height: "auto" }}
-                className="opacity-40 transition-all duration-300 hover:opacity-100 hover:scale-105"
-              />
-            </a>
           </div>
         </div>
       </div>
