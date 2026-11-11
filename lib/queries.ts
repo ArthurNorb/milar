@@ -1,49 +1,47 @@
-import { getSupabaseServerClient } from "@/lib/supabase-server";
+import { asc, count, desc, eq, sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { projects, testimonials } from "@/lib/db/schema";
 import type { Project, Testimonial } from "@/lib/types";
 
 export const PROJECTS_PER_PAGE = 5;
 
-const PROJECT_COLUMNS =
-  "id, title, description, image_url, image_urls, tags, display_order, created_at";
-const TESTIMONIAL_COLUMNS = "id, client_name, text, is_approved, created_at";
-
 export async function getApprovedTestimonials(): Promise<Testimonial[]> {
-  const supabase = await getSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("testimonials")
-    .select(TESTIMONIAL_COLUMNS)
-    .eq("is_approved", true)
-    .order("created_at", { ascending: false })
-    .returns<Testimonial[]>();
-
-  if (error) {
+  try {
+    return await db
+      .select()
+      .from(testimonials)
+      .where(eq(testimonials.is_approved, true))
+      .orderBy(desc(testimonials.created_at));
+  } catch (error: unknown) {
     console.error("Erro ao buscar depoimentos:", error);
     return [];
   }
-  return data ?? [];
 }
 
 export async function getProjectsPage(
   page: number,
 ): Promise<{ projects: Project[]; totalPages: number }> {
-  const supabase = await getSupabaseServerClient();
-  const from = (page - 1) * PROJECTS_PER_PAGE;
-  const to = from + PROJECTS_PER_PAGE - 1;
+  try {
+    const [rows, [{ total }]] = await Promise.all([
+      db
+        .select()
+        .from(projects)
+        .orderBy(
+          sql`${projects.display_order} asc nulls last`,
+          desc(projects.created_at),
+          asc(projects.id),
+        )
+        .limit(PROJECTS_PER_PAGE)
+        .offset((page - 1) * PROJECTS_PER_PAGE),
+      db.select({ total: count() }).from(projects),
+    ]);
 
-  const { data, count, error } = await supabase
-    .from("projects")
-    .select(PROJECT_COLUMNS, { count: "exact" })
-    .order("display_order", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: false })
-    .range(from, to)
-    .returns<Project[]>();
-
-  if (error) {
+    return {
+      projects: rows,
+      totalPages: total ? Math.ceil(total / PROJECTS_PER_PAGE) : 1,
+    };
+  } catch (error: unknown) {
     console.error("Erro ao buscar projetos:", error);
+    return { projects: [], totalPages: 1 };
   }
-
-  return {
-    projects: data ?? [],
-    totalPages: count ? Math.ceil(count / PROJECTS_PER_PAGE) : 1,
-  };
 }

@@ -1,47 +1,26 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { SESSION_COOKIE, verifySession } from '@/lib/session'
 
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          response = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
-
-  // getUser() valida o JWT no servidor do Supabase (getSession() só lê o cookie).
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
   const { pathname } = request.nextUrl
   const isAdminRoute = pathname.startsWith('/admin')
 
+  if (!isAdminRoute) return NextResponse.next()
+
+  // O proxy é só UX; a proteção real está em requireAdmin() nas actions/routes.
+  const isLoggedIn = await verifySession(request.cookies.get(SESSION_COOKIE)?.value)
+
   // Visitante sem sessão tentando acessar o painel → login
-  if (isAdminRoute && !user && pathname !== '/admin') {
+  if (!isLoggedIn && pathname !== '/admin') {
     return NextResponse.redirect(new URL('/admin', request.url))
   }
 
   // Usuário logado na tela de login → dashboard
-  if (user && pathname === '/admin') {
+  if (isLoggedIn && pathname === '/admin') {
     return NextResponse.redirect(new URL('/admin/dashboard', request.url))
   }
 
-  return response
+  return NextResponse.next()
 }
 
 export const config = {

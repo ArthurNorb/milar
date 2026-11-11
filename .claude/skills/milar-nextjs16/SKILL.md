@@ -13,8 +13,8 @@ description: Use ao criar rotas, layouts, metadata, sitemap/robots, proxy, route
 - **App Router:** páginas são Server Components por padrão; `"use client"` só quando precisar de estado/efeitos/eventos. `useSearchParams` exige `<Suspense>`.
 - **Metadata:** `export const metadata` em páginas/layouts server. Páginas `"use client"` (ex.: `/admin`) não exportam metadata — ponha no `layout.tsx` da pasta (ver `app/admin/layout.tsx`).
 - **SEO:** `app/sitemap.ts`, `app/robots.ts`, `metadataBase` em `app/layout.tsx`. URL base vem de `lib/site-config.ts` (`NEXT_PUBLIC_SITE_URL`).
-- **`next/image`:** domínios remotos liberados em `next.config.ts` (`images.unsplash.com` e `**.supabase.co/storage/v1/object/public/**`). `fill` exige `sizes`.
-- **Estrutura de rotas:** `/`, `/portfolio`, `/solicitar-projeto` (orçamento, em descontinuação), `/admin`, `/admin/dashboard`, `/auth/signout`.
+- **`next/image`:** domínio remoto liberado em `next.config.ts`: `images.unsplash.com` (seed); fotos enviadas são locais em `/uploads/...`. `fill` exige `sizes`.
+- **Estrutura de rotas:** `/`, `/portfolio`, `/admin`, `/admin/dashboard`, `/uploads/[...path]` (fotos), `/api/admin/uploads`.
 - **Loading:** `loading.tsx` ao lado da página (existem em `/` e `/portfolio`).
 - Pastas `_components/` dentro de `app/` não viram rota.
 

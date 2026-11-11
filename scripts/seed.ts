@@ -1,23 +1,28 @@
-// Uso: npm run seed  (carrega .env.local via tsx --env-file)
-// Usa a service role para ignorar RLS — nunca exponha essa chave no cliente.
-import { createClient } from '@supabase/supabase-js'
+// Uso: npm run seed  (lê DATABASE_URL de .env.development.local)
+// Idempotente: só insere em tabelas vazias.
+import { count } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { projects, testimonials } from "../lib/db/schema";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const url = process.env.DATABASE_URL;
 
-if (!url || !serviceKey) {
-  console.error(
-    'Defina NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY em .env.local'
-  )
-  process.exit(1)
+if (!url) {
+  console.error("Defina DATABASE_URL (ex.: via .env.development.local).");
+  process.exit(1);
 }
 
-const supabase = createClient(url, serviceKey, {
-  auth: { persistSession: false },
-})
+const sql = postgres(url, { max: 1 });
+const db = drizzle(sql);
 
 async function seedProjects() {
-  const projects = [
+  const [{ total }] = await db.select({ total: count() }).from(projects);
+  if (total > 0) {
+    console.log("Projetos já existem, pulando.");
+    return;
+  }
+
+  const rows = [
     {
       title: 'Casa Manga Beiras',
       description: 'Gerar conexão, equilíbrio e tranquilidade para uma família grande com rotina intensa. Cores e linhas moldando o comportamento.',
@@ -30,23 +35,22 @@ async function seedProjects() {
       image_url: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
       tags: ['Apartamento', 'Interiores', 'Home Office'],
     },
-  ]
+  ];
 
-  for (const project of projects) {
-    const { error } = await supabase
-      .from('projects')
-      .insert({ ...project, image_urls: [project.image_url] })
-
-    if (error) {
-      console.error(`Erro ao inserir projeto ${project.title}:`, error)
-    } else {
-      console.log(`Projeto inserido: ${project.title}`)
-    }
-  }
+  await db
+    .insert(projects)
+    .values(rows.map((row, index) => ({ ...row, image_urls: [row.image_url], display_order: index })));
+  console.log(`Projetos inseridos: ${rows.length}`);
 }
 
 async function seedTestimonials() {
-  const testimonials = [
+  const [{ total }] = await db.select({ total: count() }).from(testimonials);
+  if (total > 0) {
+    console.log("Depoimentos já existem, pulando.");
+    return;
+  }
+
+  const rows = [
     {
       client_name: 'Fernando',
       text: 'A casa tem um abraço. Não é só decoração, tem toda uma ciência por trás.',
@@ -57,29 +61,22 @@ async function seedTestimonials() {
       text: 'O clima mudou muito, o ambiente é muito mais relaxante. Valeu cada centavo.',
       is_approved: true,
     },
-  ]
+  ];
 
-  for (const testimonial of testimonials) {
-    const { error } = await supabase.from('testimonials').insert(testimonial)
-
-    if (error) {
-      console.error(`Erro ao inserir depoimento de ${testimonial.client_name}:`, error)
-    } else {
-      console.log(`Depoimento inserido: ${testimonial.client_name}`)
-    }
-  }
+  await db.insert(testimonials).values(rows);
+  console.log(`Depoimentos inseridos: ${rows.length}`);
 }
 
 async function main() {
-  console.log('Iniciando seed...')
-
-  await seedProjects()
-  await seedTestimonials()
-
-  console.log('Seed concluído!')
+  console.log("Iniciando seed...");
+  await seedProjects();
+  await seedTestimonials();
+  console.log("Seed concluído!");
 }
 
-main().catch((error) => {
-  console.error('Seed falhou:', error)
-  process.exit(1)
-})
+main()
+  .catch((error: unknown) => {
+    console.error("Seed falhou:", error);
+    process.exitCode = 1;
+  })
+  .finally(() => sql.end());

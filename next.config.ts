@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // sharp usa binários nativos; não deve ser empacotado.
+  serverExternalPackages: ["sharp"],
   images: {
     remotePatterns: [
       {
@@ -8,12 +10,6 @@ const nextConfig: NextConfig = {
         hostname: 'images.unsplash.com',
         port: '',
         pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.supabase.co', // Autoriza imagens vindas do seu storage do Supabase
-        port: '',
-        pathname: '/storage/v1/object/public/**',
       },
     ],
   },

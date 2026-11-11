@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import {
+  approveTestimonial,
+  deleteTestimonial,
+  listAllTestimonials,
+} from "./actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -30,13 +34,9 @@ export default function TestimonialsManager() {
 
   const fetchTestimonials = async () => {
     try {
-      const { data, error } = await supabase
-        .from("testimonials")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setTestimonials((data as Testimonial[] | null) ?? []);
+      const result = await listAllTestimonials();
+      if (!result.ok) throw new Error(result.error);
+      setTestimonials(result.data);
     } catch (error: unknown) {
       setMessage({
         type: "error",
@@ -48,7 +48,7 @@ export default function TestimonialsManager() {
   };
 
   useEffect(() => {
-    // Carga inicial dos dados na montagem (cliente Supabase no browser)
+    // Carga inicial dos dados na montagem (via Server Action)
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchTestimonials();
   }, []);
@@ -56,12 +56,8 @@ export default function TestimonialsManager() {
   const handleApprove = async (id: number) => {
     setActionLoading(id);
     try {
-      const { error } = await supabase
-        .from("testimonials")
-        .update({ is_approved: true })
-        .eq("id", id);
-
-      if (error) throw error;
+      const result = await approveTestimonial(id);
+      if (!result.ok) throw new Error(result.error);
 
       setTestimonials((prev) =>
         prev.map((t) => (t.id === id ? { ...t, is_approved: true } : t)),
@@ -90,12 +86,8 @@ export default function TestimonialsManager() {
 
     setActionLoading(id);
     try {
-      const { error } = await supabase
-        .from("testimonials")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
+      const result = await deleteTestimonial(id);
+      if (!result.ok) throw new Error(result.error);
 
       setTestimonials((prev) => prev.filter((t) => t.id !== id));
       setMessage({ type: "success", text: "Depoimento removido do sistema." });

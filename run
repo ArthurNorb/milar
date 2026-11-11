@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Sobe o ambiente de desenvolvimento completo: banco (Docker), migrations, seed e Next.
+#   ./run          sobe tudo e abre o servidor em http://localhost:3000
+#   ./run reset    apaga o banco e as fotos de dev antes de subir
+set -euo pipefail
+cd "$(dirname "$0")"
+
+COMPOSE="docker compose -f compose.dev.yml"
+
+if ! command -v docker >/dev/null 2>&1; then
+  cat <<'EOF'
+Docker não encontrado. Para instalar no WSL (Ubuntu/Debian):
+
+  curl -fsSL https://get.docker.com | sh
+  sudo usermod -aG docker "$USER"   # depois feche e reabra o terminal
+
+Ou instale o Docker Desktop no Windows com a integração WSL ativada.
+EOF
+  exit 1
+fi
+
+if ! docker info >/dev/null 2>&1; then
+  echo "O Docker está instalado, mas o daemon não responde."
+  echo "Inicie com 'sudo service docker start' (WSL) ou abra o Docker Desktop."
+  exit 1
+fi
+
+if [ "${1:-}" = "reset" ]; then
+  echo "→ Apagando banco e uploads de dev..."
+  $COMPOSE down -v
+  rm -rf .data
+fi
+
+if [ ! -d node_modules ] || [ package-lock.json -nt node_modules/.package-lock.json ]; then
+  echo "→ Instalando dependências..."
+  npm install
+fi
+
+echo "→ Preparando variáveis de ambiente de dev..."
+npx tsx scripts/dev-env.ts
+
+echo "→ Subindo o Postgres..."
+$COMPOSE up -d --wait
+
+echo "→ Aplicando migrations e seed..."
+npm run --silent db:migrate
+npm run --silent seed
+
+echo
+echo "Pronto. Site:  http://localhost:3000"
+echo "       Admin:  http://localhost:3000/admin  (admin@milar.local / milar-dev)"
+echo
+
+exec npm run dev

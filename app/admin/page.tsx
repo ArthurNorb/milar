@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { login } from "./actions";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -30,13 +30,10 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const result = await login(email, password);
 
-    if (error) {
-      setError("Credenciais inválidas. Verifique seus dados.");
+    if (!result.ok) {
+      setError(result.error);
       setLoading(false);
       return;
     }

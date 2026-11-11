@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import imageCompression from "browser-image-compression";
+import {
+  deleteProject,
+  listProjects,
+  reorderProjects,
+  saveProject,
+} from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,25 +40,35 @@ import Image from "next/image";
 import type { Project } from "@/lib/types";
 import { getErrorMessage } from "@/lib/utils";
 
-const BUCKET = "project-images";
-
-// Converte a URL pública de um arquivo do bucket no path usado pelo Storage.
-function storagePathFromUrl(url: string): string | null {
-  const marker = `/storage/v1/object/public/${BUCKET}/`;
-  const idx = url.indexOf(marker);
-  if (idx === -1) return null; // URL externa (ex.: Unsplash) — nada a remover
-  return decodeURIComponent(url.slice(idx + marker.length));
+// Reduz a foto no navegador antes do envio (upload rápido, mesmo no 4G).
+// O servidor ainda normaliza para WebP e remove metadados.
+async function compressForUpload(file: File): Promise<File> {
+  if (!file.type.startsWith("image/")) return file;
+  try {
+    return await imageCompression(file, {
+      maxWidthOrHeight: 2560,
+      maxSizeMB: 4,
+      initialQuality: 0.85,
+      useWebWorker: true,
+    });
+  } catch {
+    return file; // formatos que o navegador não decodifica (ex.: HEIC) seguem originais
+  }
 }
 
-// Remove arquivos do bucket. Falhas viram aviso no console: não devem
-// bloquear a operação principal (o registro no banco já foi alterado).
-async function removeFromStorage(urls: string[]) {
-  const paths = urls
-    .map(storagePathFromUrl)
-    .filter((p): p is string => p !== null);
-  if (!paths.length) return;
-  const { error } = await supabase.storage.from(BUCKET).remove(paths);
-  if (error) console.warn("Falha ao limpar imagens do Storage:", error.message);
+async function uploadImage(file: File): Promise<string> {
+  const body = new FormData();
+  body.append("file", await compressForUpload(file));
+
+  const response = await fetch("/api/admin/uploads", { method: "POST", body });
+  const json = (await response.json().catch(() => null)) as
+    | { url?: string; error?: string }
+    | null;
+
+  if (!response.ok || !json?.url) {
+    throw new Error(json?.error ?? "Falha no upload.");
+  }
+  return json.url;
 }
 
 function projectImageUrls(project: Project): string[] {
@@ -81,14 +97,9 @@ export default function PortfolioManager() {
 
   const fetchProjects = async () => {
     try {
-      const { data, error } = await supabase
-        .from("projects")
-        .select("*")
-        .order("display_order", { ascending: true, nullsFirst: false })
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setProjects((data as Project[] | null) ?? []);
+      const result = await listProjects();
+      if (!result.ok) throw new Error(result.error);
+      setProjects(result.data);
     } catch (error: unknown) {
       console.error("Erro ao buscar projetos:", error);
     } finally {
@@ -97,7 +108,7 @@ export default function PortfolioManager() {
   };
 
   useEffect(() => {
-    // Carga inicial dos dados na montagem (cliente Supabase no browser)
+    // Carga inicial dos dados na montagem (via Server Action)
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchProjects();
   }, []);
@@ -156,11 +167,8 @@ export default function PortfolioManager() {
       return;
 
     try {
-      const project = projects.find((p) => p.id === id);
-      const { error } = await supabase.from("projects").delete().eq("id", id);
-      if (error) throw error;
-
-      if (project) await removeFromStorage(projectImageUrls(project));
+      const result = await deleteProject(id);
+      if (!result.ok) throw new Error(result.error);
 
       setProjects((prev) => prev.filter((p) => p.id !== id));
       setMessage({ type: "success", text: "Projeto removido do acervo." });
@@ -176,15 +184,8 @@ export default function PortfolioManager() {
   const persistOrder = async (ordered: Project[]) => {
     setSavingOrder(true);
     try {
-      const updates = ordered.map((p, i) =>
-        supabase
-          .from("projects")
-          .update({ display_order: i })
-          .eq("id", p.id),
-      );
-      const results = await Promise.all(updates);
-      const failed = results.find((r) => r.error);
-      if (failed?.error) throw failed.error;
+      const result = await reorderProjects(ordered.map((p) => p.id));
+      if (!result.ok) throw new Error(result.error);
       setMessage({ type: "success", text: "Ordem do portfólio salva." });
     } catch (error: unknown) {
       setMessage({
@@ -235,22 +236,7 @@ export default function PortfolioManager() {
     try {
       const uploadedUrls: string[] = [];
       for (const file of newFiles) {
-        const fileExt = file.name.split(".").pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
-        const filePath = `projects/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("project-images")
-          .upload(filePath, file);
-
-        if (uploadError)
-          throw new Error(`Falha no upload: ${uploadError.message}`);
-
-        const { data: urlData } = supabase.storage
-          .from("project-images")
-          .getPublicUrl(filePath);
-
-        uploadedUrls.push(urlData.publicUrl);
+        uploadedUrls.push(await uploadImage(file));
       }
 
       const allUrls = [...existingUrls, ...uploadedUrls];
@@ -262,45 +248,22 @@ export default function PortfolioManager() {
         .map((tag) => tag.trim())
         .filter((tag) => tag.length > 0);
 
-      const projectData = {
+      // O servidor apaga do disco as fotos removidas durante a edição.
+      const result = await saveProject({
+        id: editingProject?.id,
         title,
         description,
-        image_url: allUrls[0],
-        image_urls: allUrls,
         tags,
-      };
+        image_urls: allUrls,
+      });
+      if (!result.ok) throw new Error(result.error);
 
-      if (editingProject) {
-        const { error: updateError } = await supabase
-          .from("projects")
-          .update(projectData)
-          .eq("id", editingProject.id);
-
-        if (updateError)
-          throw new Error(`Falha ao atualizar: ${updateError.message}`);
-
-        // Fotos removidas durante a edição deixam de ocupar espaço no bucket
-        await removeFromStorage(
-          projectImageUrls(editingProject).filter(
-            (url) => !existingUrls.includes(url),
-          ),
-        );
-        setMessage({
-          type: "success",
-          text: "Projeto atualizado com sucesso!",
-        });
-      } else {
-        const { error: insertError } = await supabase
-          .from("projects")
-          .insert(projectData);
-
-        if (insertError)
-          throw new Error(`Falha no banco de dados: ${insertError.message}`);
-        setMessage({
-          type: "success",
-          text: "Projeto eternizado no portfólio com sucesso!",
-        });
-      }
+      setMessage({
+        type: "success",
+        text: editingProject
+          ? "Projeto atualizado com sucesso!"
+          : "Projeto eternizado no portfólio com sucesso!",
+      });
 
       fetchProjects();
       cancelEdit();

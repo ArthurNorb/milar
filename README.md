@@ -14,37 +14,38 @@ Site de portfólio e captação da arquiteta Giovanna Lima, com foco em neuroarq
 
 - Next.js 16 (App Router) + TypeScript
 - Tailwind CSS v4 + Shadcn UI (base: `@base-ui/react`)
-- Supabase (auth, banco, storage) via `@supabase/ssr`
+- Postgres + Drizzle ORM, login próprio (cookie JWT) e fotos em disco (`sharp`)
 - Lucide React
 
 ## Como rodar
 
 ```bash
-npm install
-cp .env.example .env.local   # preencha as chaves do Supabase
-npm run dev
+./run
 ```
 
-Abra [http://localhost:3000](http://localhost:3000). Configuração do Supabase em [SETUP.md](SETUP.md).
+Sobe o Postgres (Docker), aplica migrations e seed e inicia o servidor em [http://localhost:3000](http://localhost:3000). Detalhes e requisitos em [SETUP.md](SETUP.md).
 
 ## Scripts
 
 | Comando | O que faz |
 |---|---|
-| `npm run dev` | Servidor de desenvolvimento |
+| `./run` | Ambiente de dev completo (banco + migrations + seed + Next) |
+| `npm run dev` | Só o servidor do Next |
 | `npm run build` | Build de produção |
 | `npm run typecheck` | Checagem de tipos (`tsc --noEmit`) |
 | `npm run lint` | ESLint |
 | `npm run seed` | Popula projetos e depoimentos de exemplo |
+| `npm run db:generate` / `db:migrate` | Gera / aplica migrations do Drizzle |
+| `npm run hash-password -- "senha"` | Gera `ADMIN_PASSWORD_HASH` |
 
 ## Estrutura
 
 ```text
-app/            rotas (/, /portfolio, /admin, /auth/signout, sitemap, robots)
+app/            rotas (/, /portfolio, /admin, /uploads, sitemap, robots)
 components/     layout/ e ui/
-lib/            clientes Supabase, queries, tipos, configuração do site
+lib/            db (Drizzle), auth, imagens, queries, tipos, configuração do site
 proxy.ts        proteção das rotas do painel
-supabase/       migrations SQL
+drizzle/        migrations SQL (geradas)
 ```
 
 Guia para desenvolvimento com Claude Code em [CLAUDE.md](CLAUDE.md).

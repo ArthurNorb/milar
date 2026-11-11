@@ -1,56 +1,55 @@
-# Configuração do Supabase — Milar Arquitetura
+# Ambiente de desenvolvimento — Milar Arquitetura
 
-## 1. Projeto Supabase
+## Requisitos
 
-1. Crie um projeto no [Supabase Dashboard](https://supabase.com/dashboard).
-2. Copie a URL do projeto e a chave `anon`.
-3. Copie `.env.example` para `.env.local` e preencha:
+- Node.js 20+ (testado com 24)
+- Docker (para o Postgres de dev)
 
-   ```text
-   NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-anon-key
-   SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key   # só para o seed; nunca exponha no cliente
-   ```
-
-## 2. Banco de dados
-
-1. No **SQL Editor**, rode todo o conteúdo de `supabase-schema.sql`.
-2. Em bancos já existentes, rode também as migrations de `supabase/migrations/` em ordem de data.
-   A migration `2026-11-11-admin-policies.sql` é necessária para o admin ver depoimentos pendentes
-   e excluir depoimentos, projetos e imagens.
-
-## 3. Autenticação
-
-1. **Authentication → Providers**: mantenha **Email** habilitado.
-2. **Authentication → Users**: crie o usuário da Giovanna (e-mail + senha segura).
-
-## 4. Storage
-
-O schema cria o bucket público `project-images`. Confirme em **Storage → Buckets**.
-
-## 5. Seed (opcional)
+Docker no WSL (Ubuntu/Debian):
 
 ```bash
-npm run seed
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker "$USER"   # feche e reabra o terminal
+sudo service docker start
 ```
 
-Insere projetos e depoimentos de exemplo usando a service role (lê `.env.local`).
+## Rodar
 
-## 6. Painel admin
+```bash
+./run
+```
 
-1. Acesse `/admin` e entre com o usuário criado.
-2. Em `/admin/dashboard` gerencie:
-   - **Portfólio**: cadastrar, editar, excluir e reordenar projetos (a primeira foto é a capa)
-   - **Depoimentos**: aprovar ou excluir envios pendentes
+O script instala as dependências (se precisar), gera `.env.development.local`, sobe o Postgres em Docker, aplica as migrations, popula dados de exemplo e inicia o `next dev` com hot reload.
 
-## 7. Páginas públicas
+- Site: http://localhost:3000
+- Admin: http://localhost:3000/admin — `admin@milar.local` / `milar-dev`
 
-- `/` — depoimentos aprovados + formulário de envio
-- `/portfolio` — projetos paginados
-- `/sitemap.xml` e `/robots.txt` — gerados automaticamente (defina `NEXT_PUBLIC_SITE_URL` em produção)
+Para começar do zero (apaga banco e fotos de dev): `./run reset`.
 
-## 8. Solução de problemas
+## Onde ficam os dados de dev
 
-- **Admin não vê depoimentos pendentes / não consegue excluir**: rode a migration `2026-11-11-admin-policies.sql`.
-- **Erro de upload**: verifique policies do bucket `project-images` e CORS no Storage.
-- **Variáveis de ambiente**: reinicie `npm run dev` após alterar `.env.local`.
+- Banco: volume Docker `milar-dev-db` (Postgres em `127.0.0.1:54329`).
+- Fotos enviadas pelo admin: `.data/uploads/` (fora do git).
+
+## Mudar o schema do banco
+
+1. Edite `lib/db/schema.ts` (e `lib/types.ts`).
+2. `npm run db:generate` e revise o SQL em `drizzle/`.
+3. `npm run db:migrate` (o `./run` também aplica).
+
+## Variáveis de ambiente (produção)
+
+Veja `.env.example`. Gere o hash da senha do admin com:
+
+```bash
+npm run hash-password -- "senha-forte"
+```
+
+E o segredo da sessão com `openssl rand -base64 48`.
+
+## Solução de problemas
+
+- **"Docker não encontrado" / daemon não responde**: instale ou inicie o Docker (acima).
+- **Porta 54329 ocupada**: troque a porta em `compose.dev.yml` e em `DATABASE_URL`.
+- **Login não funciona depois de editar o `.env.development.local`**: reinicie o `./run`.
+- **Erro de upload**: fotos até 15 MB; formatos JPG, PNG, WebP, AVIF e HEIC.

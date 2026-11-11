@@ -1,6 +1,6 @@
 # Milar Arquitetura — Guia para Claude Code
 
-Site de portfólio e captação da arquiteta Giovanna Lima (neuroarquitetura). Next.js 16 + Supabase.
+Site de portfólio e captação da arquiteta Giovanna Lima (neuroarquitetura). Next.js 16 + Postgres (Drizzle) + login próprio + imagens em disco.
 
 ## Fluxo de Trabalho (obrigatório)
 
@@ -17,16 +17,15 @@ Site de portfólio e captação da arquiteta Giovanna Lima (neuroarquitetura). N
 - Só toque em UI se a tarefa exigir explicitamente uma mudança funcional (e mantenha as classes visuais idênticas)
 - TypeScript estrito; **nunca `any`** (use `unknown` + `getErrorMessage` de `lib/utils.ts`)
 - Next.js 16 mudou APIs: leia `node_modules/next/dist/docs/` antes de usar uma API do framework (ver `AGENTS.md`)
-- **Módulo de orçamento está em descontinuação** — não corrigir nem melhorar:
-  `app/solicitar-projeto/**`, `app/api/simulacao/**`, `app/api/admin/orcamento/**`,
-  `solicitacoes-manager.tsx`, `lib/orcamento-types.ts`, `lib/email-template.ts`
+- **Autorização é do servidor** (não há RLS): toda Server Action / route handler de escrita do admin começa com `requireAdmin()` (`lib/auth.ts`). Depoimento público entra sempre com `is_approved = false`
+- O módulo de orçamento foi **removido** (era acoplado ao Supabase/Resend)
 
 ## Quando usar cada skill
 
 Invoque a skill do tópico **antes** de editar:
 
 - **Mexer em UI, componentes, classes Tailwind, cores, fontes ou imagens** → `milar-design-system`
-- **Mexer em banco, auth, RLS, Storage, migrations, queries ou tipos** → `milar-supabase`
+- **Mexer em banco, auth, uploads de imagem, migrations, queries ou tipos** → `milar-database`
 - **Criar rota, layout, metadata, sitemap/robots, proxy ou route handler** → `milar-nextjs16`
 - **Mexer no painel `/admin` ou adicionar uma aba/gerenciador** → `milar-admin`
 - **Antes de dizer que terminou ou sugerir a mensagem de commit** → `milar-verify`
@@ -34,18 +33,27 @@ Invoque a skill do tópico **antes** de editar:
 ## Comandos
 
 ```bash
-npm run dev         # servidor de desenvolvimento
+./run               # dev completo: Postgres (Docker) + migrations + seed + next dev
+./run reset         # idem, apagando antes o banco e as fotos de dev
+npm run dev         # só o Next (banco já precisa estar de pé)
 npm run typecheck   # tsc --noEmit
-npm run lint        # eslint (ignora o módulo de orçamento)
+npm run lint        # eslint
 npm run build       # build de produção
-npm run seed        # popula projetos/depoimentos (usa .env.local + service role)
+npm run seed        # popula projetos/depoimentos de exemplo (só em tabelas vazias)
+npm run db:generate # gera migration a partir de lib/db/schema.ts
+npm run db:migrate  # aplica migrations pendentes
+npm run hash-password -- "senha"   # gera ADMIN_PASSWORD_HASH
 ```
+
+Dev: requer Docker. Login do admin em dev: `admin@milar.local` / `milar-dev`.
 
 ## Stack
 
 - **Next.js 16** (App Router, `proxy.ts`) + **TypeScript** estrito
 - **Tailwind CSS v4** + **Shadcn UI** sobre `@base-ui/react` (NÃO Radix)
-- **Supabase** (auth + DB + storage) via `@supabase/ssr`
+- **Postgres 17** + **Drizzle ORM** (`postgres.js`)
+- **Auth própria**: cookie JWT assinado (`jose`), senha com scrypt
+- **Imagens**: upload → `sharp` (WebP, 2560px, sem EXIF) → disco em `UPLOADS_DIR`
 - **Lucide React** para ícones
 
 ## Mapa do Projeto
@@ -54,24 +62,29 @@ npm run seed        # popula projetos/depoimentos (usa .env.local + service role
 app/
   page.tsx                  # Home (SSR, depoimentos aprovados)
   portfolio/                # SSR paginado (5/página) + carrossel de fotos
-  admin/page.tsx            # Login
-  admin/dashboard/          # Abas: portfolio | testimonials (+ solicitações, em descontinuação)
-  auth/signout/route.ts     # Logout server-side
+  actions/testimonials.ts   # Server Action pública: enviar depoimento
+  admin/page.tsx            # Login (chama admin/actions.ts)
+  admin/actions.ts          # login / logout
+  admin/dashboard/          # Abas: portfolio | testimonials; actions.ts = escritas do admin
+  api/admin/uploads/        # POST de imagem (sharp) — só admin
+  uploads/[...path]/        # GET: serve as fotos de UPLOADS_DIR (cache imutável)
   sitemap.ts, robots.ts     # SEO
 components/
   layout/                   # header, footer, conditional-layout (esconde em /admin)
   ui/                       # primitivos shadcn/base-ui
   testimonial-form.tsx      # Formulário público de depoimento
 lib/
-  supabase.ts               # Cliente browser
-  supabase-server.ts        # Cliente server (cookies)
+  db/schema.ts, db/index.ts # Tabelas Drizzle e cliente (server-only)
+  auth.ts, session.ts, password.ts  # Sessão, JWT e hash de senha
+  images.ts                 # Pipeline sharp + remoção de arquivos
   queries.ts                # Leituras públicas (testimonials, projects)
   types.ts                  # Project, Testimonial
   site-config.ts            # Contato, CAU, URL do site, WhatsApp
   utils.ts                  # cn(), getErrorMessage()
-proxy.ts                    # Protege /admin/dashboard/**
-supabase-schema.sql         # Schema completo
-supabase/migrations/        # Migrations incrementais (rodar no SQL Editor)
+proxy.ts                    # Protege /admin/dashboard/** (valida o cookie)
+drizzle/                    # Migrations geradas
+compose.dev.yml             # Postgres de dev
+run                         # Script de dev (ver Comandos)
 ```
 
 ## Banco de Dados
@@ -81,9 +94,10 @@ supabase/migrations/        # Migrations incrementais (rodar no SQL Editor)
 | `projects` | id, title, description, image_url, image_urls (text[]), tags (text[]), display_order, created_at |
 | `testimonials` | id, client_name, text, is_approved, created_at |
 
-Buckets: `project-images` (público). Detalhes de RLS, migrations e Storage → skill `milar-supabase`.
+Mudou o schema? Edite `lib/db/schema.ts`, rode `npm run db:generate` e `npm run db:migrate`. Detalhes → skill `milar-database`.
 
 ## Variáveis de Ambiente
 
-Modelo em `.env.example`. Obrigatórias: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-`SUPABASE_SERVICE_ROLE_KEY` só para seed/servidor. `NEXT_PUBLIC_SITE_URL` para sitemap/OG.
+Modelo em `.env.example`. Em dev o `./run` gera `.env.development.local` sozinho.
+Obrigatórias: `DATABASE_URL`, `SESSION_SECRET` (≥32 chars), `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`, `UPLOADS_DIR`.
+`NEXT_PUBLIC_SITE_URL` para sitemap/OG.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { submitTestimonial } from "@/app/actions/testimonials";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,13 +40,8 @@ export default function TestimonialForm() {
     const clientName = formData.get("client_name") as string;
     const text = formData.get("text") as string;
 
-    const { error: submitError } = await supabase.from("testimonials").insert([
-      {
-        client_name: clientName,
-        text: text,
-        is_approved: false,
-      },
-    ]);
+    const result = await submitTestimonial(clientName, text);
+    const submitError = result.ok ? null : result.error;
 
     setIsSubmitting(false);
 

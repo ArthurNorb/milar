@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { whatsappUrl } from "@/lib/site-config";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
@@ -39,8 +40,10 @@ export function Header() {
         <div className="flex items-center">
           <Button
             render={
-              <Link
-                href="/solicitar-projeto"
+              <a
+                href={whatsappUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-full h-full flex items-center justify-center px-6 sm:px-8 font-['Spartan'] uppercase text-[10px] sm:text-xs tracking-widest"
               />
             }
