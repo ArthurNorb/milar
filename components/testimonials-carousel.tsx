@@ -6,7 +6,8 @@ import SliderArrows from "@/components/slider-arrows";
 import type { Testimonial } from "@/lib/types";
 import { useAutoSlider } from "@/lib/use-auto-slider";
 
-const VISIBLE_DESKTOP = 2;
+const VISIBLE_DESKTOP = 4;
+const DESKTOP_MIN_WIDTH = 1024;
 const INTERVAL_MS = 6000;
 
 export default function TestimonialsCarousel({
@@ -18,6 +19,7 @@ export default function TestimonialsCarousel({
     testimonials.length,
     VISIBLE_DESKTOP,
     INTERVAL_MS,
+    DESKTOP_MIN_WIDTH,
   );
 
   const items = slider.active
@@ -44,26 +46,26 @@ export default function TestimonialsCarousel({
           {items.map((testimonial, i) => (
             <div
               key={`${testimonial.id}-${i}`}
-              className="px-2 md:px-6 lg:px-12"
+              className="px-2 md:px-6 lg:px-3"
               style={{ width: `${100 / slider.total}%` }}
               aria-hidden={i >= testimonials.length ? true : undefined}
             >
               <div className="h-full group bg-[#e3d9ce]/5 md:bg-transparent p-6 md:p-0 rounded-3xl md:rounded-none border border-[#bfa086]/10 md:border-none">
-                <Quote className="h-8 w-8 md:h-10 md:w-10 text-[#87381e] mb-4 md:mb-6 transform transition-transform group-hover:-translate-y-2 duration-300" />
-                <blockquote className="text-xl md:text-2xl lg:text-3xl font-serif font-light leading-snug text-[#e3d9ce] mb-6 md:mb-8">
+                <Quote className="h-8 w-8 md:h-10 md:w-10 lg:h-7 lg:w-7 text-[#87381e] mb-4 md:mb-6 lg:mb-4 transform transition-transform group-hover:-translate-y-2 duration-300" />
+                <blockquote className="text-xl md:text-2xl lg:text-base font-serif font-light leading-snug text-[#e3d9ce] mb-6 md:mb-8 lg:mb-5">
                   &quot;{testimonial.text}&quot;
                 </blockquote>
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12 md:h-14 md:w-14 border-2 border-[#bfa086]">
-                    <AvatarFallback className="bg-[#2e3d30] text-[#bfa086] font-serif text-lg">
+                <div className="flex items-center gap-3 lg:gap-3">
+                  <Avatar className="h-12 w-12 md:h-14 md:w-14 lg:h-10 lg:w-10 border-2 border-[#bfa086]">
+                    <AvatarFallback className="bg-[#2e3d30] text-[#bfa086] font-serif text-lg lg:text-base">
                       {testimonial.client_name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-['Spartan'] uppercase text-[10px] md:text-xs tracking-widest text-[#bfa086]">
+                    <p className="font-['Spartan'] uppercase text-[10px] md:text-xs lg:text-[10px] tracking-widest text-[#bfa086]">
                       {testimonial.client_name}
                     </p>
-                    <p className="text-xs md:text-sm text-[#e3d9ce]/60 font-light italic mt-0.5">
+                    <p className="text-xs md:text-sm lg:text-xs text-[#e3d9ce]/60 font-light italic mt-0.5">
                       Cliente Milar
                     </p>
                   </div>

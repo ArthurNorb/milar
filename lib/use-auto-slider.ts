@@ -31,8 +31,9 @@ export function useAutoSlider(
   count: number,
   desktopVisible: number,
   intervalMs: number,
+  desktopMinWidth = 768,
 ) {
-  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const isDesktop = useMediaQuery(`(min-width: ${desktopMinWidth}px)`);
   const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const visible = isDesktop ? desktopVisible : 1;
 
