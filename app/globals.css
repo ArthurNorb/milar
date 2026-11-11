@@ -140,6 +140,7 @@
 
   html {
     @apply font-sans;
+    scroll-padding-top: 5rem;
   }
 
   h1,
@@ -162,6 +163,7 @@
   opacity: 0.03;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   z-index: 100;
+  transform: translateZ(0);
 }
 
 @layer utilities {
@@ -186,6 +188,16 @@
     font-weight: 300;
     font-size: 1.0625rem;
     line-height: 1.8;
+    overflow-wrap: anywhere;
+  }
+  .post-content pre,
+  .post-content table {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .post-content iframe,
+  .post-content video {
+    max-width: 100%;
   }
   .post-content > * + * {
     margin-top: 1.25em;

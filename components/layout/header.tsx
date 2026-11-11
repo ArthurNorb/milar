@@ -2,6 +2,7 @@ import Link from "next/link";
 import { siteConfig } from "@/lib/site-config";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { MobileMenu } from "@/components/layout/mobile-menu";
 
 const navItems = [
   { label: "Início", href: "/" },
@@ -14,8 +15,8 @@ const navItems = [
 export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[#bfa086]/20 bg-[#e3d9ce]/90 backdrop-blur-md transition-all duration-300 shadow-sm">
-      <div className="container flex h-20 max-w-screen-2xl items-center justify-between px-6 md:px-12 mx-auto">
-        <Link href="/">
+      <div className="container flex h-20 max-w-screen-2xl items-center justify-between px-4 md:px-12 mx-auto">
+        <Link href="/" className="shrink-0">
           <Image
             src="/logotipos/Logotipo Principal 06.1.png"
             alt="Símbolo Milar"
@@ -23,7 +24,7 @@ export function Header() {
             height={110}
             loading="eager"
             style={{ width: "auto", height: "auto" }}
-            className="hover:scale-105 transition-all duration-300"
+            className="max-md:max-h-14 max-md:w-auto hover:scale-105 transition-all duration-300"
           />
         </Link>
 
@@ -40,7 +41,7 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center">
+        <div className="flex items-center gap-1 md:gap-0">
           <Button
             render={
               <a
@@ -55,6 +56,7 @@ export function Header() {
           >
             Quero um Projeto
           </Button>
+          <MobileMenu items={navItems} />
         </div>
       </div>
     </header>

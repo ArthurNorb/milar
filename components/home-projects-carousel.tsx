@@ -30,8 +30,9 @@ export default function HomeProjectsCarousel({
       className="relative group/slider"
       onMouseEnter={slider.pause}
       onMouseLeave={slider.resume}
+      {...slider.swipeHandlers}
     >
-      <div className="overflow-hidden">
+      <div className="overflow-hidden touch-pan-y">
         <div
           className={`flex ${slider.animate ? "transition-transform duration-700 ease-out" : ""}`}
           style={{

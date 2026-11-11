@@ -1,6 +1,6 @@
 "use client";
 
-import { Quote } from "lucide-react";
+import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import SliderArrows from "@/components/slider-arrows";
 import type { Testimonial } from "@/lib/types";
@@ -31,10 +31,9 @@ export default function TestimonialsCarousel({
       className="relative group/slider"
       onMouseEnter={slider.pause}
       onMouseLeave={slider.resume}
-      onTouchStart={slider.pause}
-      onTouchEnd={slider.resume}
+      {...slider.swipeHandlers}
     >
-      <div className="overflow-hidden py-3">
+      <div className="overflow-hidden py-3 touch-pan-y">
         <div
           className={`flex ${slider.animate ? "transition-transform duration-700 ease-out" : ""}`}
           style={{
@@ -52,7 +51,7 @@ export default function TestimonialsCarousel({
             >
               <div className="h-full group bg-[#e3d9ce]/5 md:bg-transparent p-6 md:p-0 rounded-3xl md:rounded-none border border-[#bfa086]/10 md:border-none">
                 <Quote className="h-8 w-8 md:h-10 md:w-10 lg:h-7 lg:w-7 text-[#87381e] mb-4 md:mb-6 lg:mb-4 transform transition-transform group-hover:-translate-y-2 duration-300" />
-                <blockquote className="text-xl md:text-2xl lg:text-base font-serif font-light leading-snug text-[#e3d9ce] mb-6 md:mb-8 lg:mb-5">
+                <blockquote className="text-lg md:text-2xl lg:text-base font-serif font-light leading-snug text-[#e3d9ce] mb-6 md:mb-8 lg:mb-5">
                   &quot;{testimonial.text}&quot;
                 </blockquote>
                 <div className="flex items-center gap-3 lg:gap-3">
@@ -77,29 +76,51 @@ export default function TestimonialsCarousel({
       </div>
 
       {slider.active && (
-        <SliderArrows
-          onPrev={slider.prev}
-          onNext={slider.next}
-          topClassName="top-[40%]"
-          buttonClassName="bg-[#e3d9ce]/15 text-[#e3d9ce] hover:bg-[#e3d9ce]/30"
-        />
+        <div className="hidden lg:block">
+          <SliderArrows
+            onPrev={slider.prev}
+            onNext={slider.next}
+            topClassName="top-[40%]"
+            buttonClassName="bg-[#e3d9ce]/15 text-[#e3d9ce] hover:bg-[#e3d9ce]/30"
+          />
+        </div>
       )}
 
       {slider.active && (
-        <div className="flex justify-center gap-2 mt-8">
+        <div className="flex items-center justify-center gap-1 mt-6 lg:mt-8">
+          <button
+            type="button"
+            aria-label="Anterior"
+            onClick={slider.prev}
+            className="lg:hidden w-11 h-11 rounded-full flex items-center justify-center bg-[#e3d9ce]/15 text-[#e3d9ce] hover:bg-[#e3d9ce]/30 mr-2"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
           {testimonials.map((testimonial, i) => (
             <button
               key={testimonial.id}
               type="button"
               aria-label={`Ver depoimento ${i + 1}`}
               onClick={() => slider.goTo(i)}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === slider.idx % testimonials.length
-                  ? "w-6 bg-[#bfa086]"
-                  : "w-1.5 bg-[#bfa086]/40"
-              }`}
-            />
+              className="group/dot flex h-6 items-center justify-center px-1"
+            >
+              <span
+                className={`block h-1.5 rounded-full transition-all duration-300 ${
+                  i === slider.idx % testimonials.length
+                    ? "w-6 bg-[#bfa086]"
+                    : "w-1.5 bg-[#bfa086]/40"
+                }`}
+              />
+            </button>
           ))}
+          <button
+            type="button"
+            aria-label="Próximo"
+            onClick={slider.next}
+            className="lg:hidden w-11 h-11 rounded-full flex items-center justify-center bg-[#e3d9ce]/15 text-[#e3d9ce] hover:bg-[#e3d9ce]/30 ml-2"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
       )}
     </div>

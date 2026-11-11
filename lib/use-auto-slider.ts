@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
+  type TouchEvent,
   type TransitionEvent,
 } from "react";
 
@@ -115,7 +116,34 @@ export function useAutoSlider(
     setIdx(i);
   }, []);
 
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+
+  const swipeHandlers = {
+    onTouchStart: (e: TouchEvent<HTMLElement>) => {
+      const t = e.touches[0];
+      touchStart.current = { x: t.clientX, y: t.clientY };
+      setPaused(true);
+    },
+    onTouchEnd: (e: TouchEvent<HTMLElement>) => {
+      setPaused(false);
+      const start = touchStart.current;
+      touchStart.current = null;
+      if (!start || !active) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - start.x;
+      const dy = t.clientY - start.y;
+      if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+      if (dx < 0) next();
+      else prev();
+    },
+    onTouchCancel: () => {
+      touchStart.current = null;
+      setPaused(false);
+    },
+  };
+
   return {
+    swipeHandlers,
     active,
     visible,
     total,

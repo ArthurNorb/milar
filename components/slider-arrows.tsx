@@ -16,7 +16,7 @@ export default function SliderArrows({
   topClassName = "top-1/2",
   buttonClassName,
 }: Props) {
-  const base = `absolute ${topClassName} -translate-y-1/2 z-10 w-9 h-9 rounded-full flex items-center justify-center transition-opacity opacity-100 md:opacity-0 md:group-hover/slider:opacity-100 focus-visible:opacity-100 ${buttonClassName}`;
+  const base = `absolute ${topClassName} -translate-y-1/2 z-10 w-11 h-11 md:w-9 md:h-9 rounded-full flex items-center justify-center transition-opacity opacity-100 md:opacity-0 md:group-hover/slider:opacity-100 focus-visible:opacity-100 ${buttonClassName}`;
 
   return (
     <>

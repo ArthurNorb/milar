@@ -24,7 +24,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#e3d9ce] text-[#2e3d30] overflow-hidden selection:bg-[#87381e] selection:text-[#e3d9ce]">
-      <section className="relative min-h-[90vh] md:min-h-screen flex items-center pt-28 pb-16 md:pt-20 md:pb-12 bg-[#2e3d30] text-[#e3d9ce] rounded-b-[2.5rem] md:rounded-b-[5rem] shadow-2xl z-20">
+      <section className="relative min-h-[calc(100svh-5rem)] md:min-h-screen flex items-center pt-10 pb-16 md:pt-20 md:pb-12 bg-[#2e3d30] text-[#e3d9ce] rounded-b-[2.5rem] md:rounded-b-[5rem] shadow-2xl z-20">
         <div className="absolute inset-0 opacity-10 pointer-events-none mix-blend-overlay">
           <Image
             src="/estampas/Preenchida Macro 01.png"
@@ -90,7 +90,7 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="lg:col-span-5 relative h-[50vh] lg:h-[75vh] w-full hidden sm:block group mt-8 lg:mt-0">
+          <div className="lg:col-span-5 relative h-[42vh] sm:h-[50vh] lg:h-[75vh] w-full group mt-4 sm:mt-8 lg:mt-0 mr-3 md:mr-0">
             <div className="absolute inset-0 bg-[#c3532e] transform translate-x-3 translate-y-3 md:translate-x-4 md:translate-y-4 transition-transform group-hover:translate-x-6 group-hover:translate-y-6 duration-700 ease-out z-0" />
             <div className="relative h-full w-full overflow-hidden border-4 border-[#2e3d30] shadow-2xl z-10 bg-[#bfa086]">
               <Image
@@ -106,7 +106,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="sobre" className="scroll-mt-20 py-20 md:py-40 relative z-10 overflow-hidden">
+      <section id="sobre" className="py-20 md:py-40 relative z-10 overflow-hidden">
         <div className="absolute inset-0 z-0 opacity-[0.04] pointer-events-none">
           <Image
             src="/estampas/Contorno Macro 04.png"
@@ -217,7 +217,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section id="feedbacks" className="scroll-mt-20 py-20 md:py-32 bg-[#2e3d30] text-[#e3d9ce] relative rounded-t-[2.5rem] md:rounded-t-[5rem]">
+      <section id="feedbacks" className="py-20 md:py-32 bg-[#2e3d30] text-[#e3d9ce] relative rounded-t-[2.5rem] md:rounded-t-[5rem]">
         <div className="container max-w-7xl px-5 md:px-12 mx-auto relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-20 gap-6 md:gap-8 border-b border-[#e3d9ce]/20 pb-8 md:pb-12">
             <div className="space-y-3 md:space-y-4 max-w-2xl">
@@ -244,7 +244,7 @@ export default async function HomePage() {
               >
                 <PenLine className="w-4 h-4" /> Deixar depoimento
               </DialogTrigger>
-              <DialogContent className="w-[95vw] sm:max-w-xl bg-[#e3d9ce] border-none text-[#2e3d30] rounded-3xl p-0 overflow-hidden">
+              <DialogContent className="w-[95vw] sm:max-w-xl bg-[#e3d9ce] border-none text-[#2e3d30] rounded-3xl p-0 max-h-[90dvh] overflow-y-auto">
                 <div className="h-2 w-full bg-[#87381e]"></div>
                 <DialogHeader className="p-6 md:p-8 pb-2 md:pb-4">
                   <DialogTitle className="text-2xl md:text-3xl font-serif text-[#2e3d30]">

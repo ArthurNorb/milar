@@ -1,6 +1,6 @@
 export default function ProjectsLoading() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#e3d9ce] overflow-hidden pt-28 pb-20 md:pt-40 md:pb-32">
+    <div className="flex flex-col min-h-screen bg-[#e3d9ce] overflow-hidden pt-16 pb-20 md:pb-32">
       <div className="container max-w-screen-2xl px-6 md:px-12 mx-auto">
         {/* Header Skeleton - Estilo Editorial */}
         <div className="flex flex-col items-center text-center mb-16 md:mb-24 space-y-4">

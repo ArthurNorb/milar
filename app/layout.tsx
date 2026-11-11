@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display, League_Spartan } from "next/font/google";
 import "./globals.css";
 import { ConditionalLayout } from "@/components/layout/conditional-layout";
@@ -36,6 +36,11 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: "#e3d9ce",
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -44,7 +49,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="scroll-smooth" data-scroll-behavior="smooth">
       <body
-        className={`${inter.variable} ${playfair.variable} ${spartan.variable} font-sans antialiased bg-[#e3d9ce] text-[#2e3d30] flex flex-col min-h-screen selection:bg-[#87381e] selection:text-[#e3d9ce]`}
+        className={`${inter.variable} ${playfair.variable} ${spartan.variable} font-sans antialiased bg-[#e3d9ce] text-[#2e3d30] flex flex-col min-h-dvh selection:bg-[#87381e] selection:text-[#e3d9ce]`}
       >
         <div className="grain-overlay pointer-events-none" />
         <ConditionalLayout>{children}</ConditionalLayout>

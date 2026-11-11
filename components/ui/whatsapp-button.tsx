@@ -4,13 +4,13 @@ export function WhatsAppButton() {
   const whatsappUrl = buildWhatsappUrl();
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+    <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 md:bottom-6 md:right-6 z-50 flex flex-col items-end gap-2">
       <a
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Contato via WhatsApp"
-        className="group flex items-center justify-center h-14 rounded-full bg-[#2e3d30] text-[#e3d9ce] px-4 shadow-xl border border-[#bfa086]/20 hover:bg-[#87381e] hover:border-[#87381e] transition-all duration-500 hover:shadow-2xl hover:-translate-y-1"
+        className="group flex items-center justify-center h-12 w-12 md:h-14 md:w-auto rounded-full bg-[#2e3d30] text-[#e3d9ce] px-0 md:px-4 shadow-xl border border-[#bfa086]/20 hover:bg-[#87381e] hover:border-[#87381e] transition-all duration-500 hover:shadow-2xl hover:-translate-y-1"
       >
         <svg 
           xmlns="http://www.w3.org/2000/svg" 

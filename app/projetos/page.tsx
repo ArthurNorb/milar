@@ -40,7 +40,7 @@ export default async function ProjectsPage({ searchParams }: ProjectsProps) {
 
       <div className="container max-w-screen-xl px-6 md:px-12 mx-auto relative z-10">
         {/* Lista de Projetos (Um abaixo do outro, intercalando lados no desktop) */}
-        <div className="flex flex-col gap-24 md:gap-32">
+        <div className="flex flex-col gap-16 md:gap-32">
           {projectList.map((project, index) => {
             // Alterna o lado da imagem e do texto no desktop (par / ímpar)
             const isEven = index % 2 === 0;
@@ -62,6 +62,7 @@ export default async function ProjectsPage({ searchParams }: ProjectsProps) {
                     }
                     alt={project.title}
                     sizes="(max-width: 1024px) 100vw, 50vw"
+                    priority={index === 0}
                   />
 
                   {/* Efeito Hover na Imagem */}
@@ -109,16 +110,16 @@ export default async function ProjectsPage({ searchParams }: ProjectsProps) {
 
         {/* Navegação da Paginação */}
         {totalPages > 1 && (
-          <nav className="mt-32 flex justify-center items-center gap-6 md:gap-12 border-t border-[#bfa086]/30 pt-10">
+          <nav className="mt-20 md:mt-32 flex flex-wrap justify-center items-center gap-x-6 gap-y-2 md:gap-12 border-t border-[#bfa086]/30 pt-10">
             {currentPage > 1 ? (
               <Link
                 href={`/projetos?page=${currentPage - 1}`}
-                className="text-sm font-['Spartan'] uppercase tracking-widest text-[#87381e] hover:text-[#2e3d30] transition-colors flex items-center gap-2"
+                className="text-sm font-['Spartan'] uppercase tracking-widest text-[#87381e] hover:text-[#2e3d30] transition-colors flex items-center gap-2 py-3"
               >
                 &larr; Anteriores
               </Link>
             ) : (
-              <span className="text-sm font-['Spartan'] uppercase tracking-widest text-[#2e3d30]/30 cursor-not-allowed flex items-center gap-2">
+              <span className="text-sm font-['Spartan'] uppercase tracking-widest text-[#2e3d30]/30 cursor-not-allowed flex items-center gap-2 py-3">
                 &larr; Anteriores
               </span>
             )}
@@ -130,12 +131,12 @@ export default async function ProjectsPage({ searchParams }: ProjectsProps) {
             {currentPage < totalPages ? (
               <Link
                 href={`/projetos?page=${currentPage + 1}`}
-                className="text-sm font-['Spartan'] uppercase tracking-widest text-[#87381e] hover:text-[#2e3d30] transition-colors flex items-center gap-2"
+                className="text-sm font-['Spartan'] uppercase tracking-widest text-[#87381e] hover:text-[#2e3d30] transition-colors flex items-center gap-2 py-3"
               >
                 Próximos &rarr;
               </Link>
             ) : (
-              <span className="text-sm font-['Spartan'] uppercase tracking-widest text-[#2e3d30]/30 cursor-not-allowed flex items-center gap-2">
+              <span className="text-sm font-['Spartan'] uppercase tracking-widest text-[#2e3d30]/30 cursor-not-allowed flex items-center gap-2 py-3">
                 Próximos &rarr;
               </span>
             )}

@@ -5,7 +5,7 @@ import { siteConfig, whatsappUrl } from "@/lib/site-config";
 
 export function Footer() {
   return (
-    <footer className="w-full bg-[#2e3d30] text-[#e3d9ce] relative overflow-hidden pt-24 pb-10 border-t-8 border-[#87381e]">
+    <footer className="w-full bg-[#2e3d30] text-[#e3d9ce] relative overflow-hidden pt-16 md:pt-24 pb-24 md:pb-10 border-t-8 border-[#87381e]">
       <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.2] mix-blend-overlay">
         <Image
           src="/estampas/Preenchida Macro 04.png"
@@ -54,7 +54,7 @@ export function Footer() {
                 <Link
                   key={link.name}
                   href={link.path}
-                  className="text-sm text-[#e3d9ce]/80 hover:text-[#bfa086] transition-colors w-fit group flex items-center gap-3"
+                  className="text-sm text-[#e3d9ce]/80 hover:text-[#bfa086] transition-colors w-fit group flex items-center gap-3 py-2 md:py-0"
                 >
                   <span className="w-0 h-px bg-[#bfa086] transition-all duration-300 group-hover:w-6"></span>
                   {link.name}
@@ -111,7 +111,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-20 pt-8 border-t border-[#756d47]/30 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-['Spartan'] text-[#756d47] uppercase tracking-widest">
+        <div className="mt-12 md:mt-20 pt-8 border-t border-[#756d47]/30 flex flex-col md:flex-row justify-between items-center gap-6 text-[11px] md:text-[10px] font-['Spartan'] text-[#756d47] uppercase tracking-widest">
           <div className="text-center md:text-left">
             <p>&copy; {new Date().getFullYear()} Milar Arquitetura.</p>
             <p className="text-[#a39f86] mt-1">

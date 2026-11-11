@@ -8,12 +8,19 @@ interface Props {
   images: string[];
   alt: string;
   sizes: string;
+  /** Só a primeira foto do primeiro projeto da página deve ter prioridade. */
+  priority?: boolean;
 }
 
 const AUTOPLAY_MS = 5000;
 const SWIPE_THRESHOLD = 40;
 
-export default function ProjectImageCarousel({ images, alt, sizes }: Props) {
+export default function ProjectImageCarousel({
+  images,
+  alt,
+  sizes,
+  priority = false,
+}: Props) {
   const [idx, setIdx] = useState(0);
   const [userInteracted, setUserInteracted] = useState(false);
   const touchStartX = useRef<number | null>(null);
@@ -82,7 +89,7 @@ export default function ProjectImageCarousel({ images, alt, sizes }: Props) {
           alt={`${alt} — foto ${i + 1} de ${total}`}
           fill
           sizes={sizes}
-          priority={i === 0}
+          priority={priority && i === 0}
           className={`object-cover transition-opacity duration-700 ease-out group-hover:scale-110 ${
             i === idx ? "opacity-100" : "opacity-0"
           }`}
@@ -95,7 +102,7 @@ export default function ProjectImageCarousel({ images, alt, sizes }: Props) {
           e.stopPropagation();
           goTo(idx - 1);
         }}
-        className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/40 text-white flex items-center justify-center transition-opacity hover:bg-black/60 opacity-100 md:opacity-0 md:group-hover:opacity-100"
+        className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-11 h-11 md:w-9 md:h-9 rounded-full bg-black/40 text-white flex items-center justify-center transition-opacity hover:bg-black/60 opacity-100 md:opacity-0 md:group-hover:opacity-100"
         aria-label="Foto anterior"
       >
         <ChevronLeft className="w-4 h-4" />
@@ -106,13 +113,13 @@ export default function ProjectImageCarousel({ images, alt, sizes }: Props) {
           e.stopPropagation();
           goTo(idx + 1);
         }}
-        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/40 text-white flex items-center justify-center transition-opacity hover:bg-black/60 opacity-100 md:opacity-0 md:group-hover:opacity-100"
+        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-11 h-11 md:w-9 md:h-9 rounded-full bg-black/40 text-white flex items-center justify-center transition-opacity hover:bg-black/60 opacity-100 md:opacity-0 md:group-hover:opacity-100"
         aria-label="Próxima foto"
       >
         <ChevronRight className="w-4 h-4" />
       </button>
 
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex gap-1.5 transition-opacity opacity-100 md:opacity-0 md:group-hover:opacity-100">
+      <div className="absolute bottom-1 left-1/2 -translate-x-1/2 z-10 flex transition-opacity opacity-100 md:opacity-0 md:group-hover:opacity-100">
         {images.map((_, i) => (
           <button
             key={i}
@@ -121,11 +128,15 @@ export default function ProjectImageCarousel({ images, alt, sizes }: Props) {
               e.stopPropagation();
               goTo(i);
             }}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === idx ? "w-4 bg-white" : "w-1.5 bg-white/50"
-            }`}
+            className="flex h-6 items-center justify-center px-[3px]"
             aria-label={`Foto ${i + 1}`}
-          />
+          >
+            <span
+              className={`block h-1.5 rounded-full transition-all duration-300 ${
+                i === idx ? "w-4 bg-white" : "w-1.5 bg-white/50"
+              }`}
+            />
+          </button>
         ))}
       </div>
     </div>

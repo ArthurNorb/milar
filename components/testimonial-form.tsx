@@ -136,18 +136,18 @@ export default function TestimonialForm() {
         </div>
       </div>
 
-      <div className="flex items-center space-x-2 bg-[#bfa086]/10 p-3 rounded-2xl border border-[#bfa086]/20">
+      <div className="flex items-center space-x-3 md:space-x-2 bg-[#bfa086]/10 p-3 rounded-2xl border border-[#bfa086]/20">
         <Checkbox
           id="terms"
           checked={acceptTerms}
           onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
-          className="border-[#87381e]/40 data-checked:bg-[#87381e] data-checked:border-[#87381e] data-checked:text-[#e3d9ce] h-4 w-4 rounded transition-all shrink-0"
+          className="border-[#87381e]/40 data-checked:bg-[#87381e] data-checked:border-[#87381e] data-checked:text-[#e3d9ce] h-5 w-5 md:h-4 md:w-4 rounded transition-all shrink-0"
         />
         {/* Aqui está a mágica: transform scale-[0.85] origin-left */}
         <div className="flex-1 overflow-hidden">
           <Label
             htmlFor="terms"
-            className="text-xs font-light text-[#756d47] leading-tight cursor-pointer block transform scale-[0.85] origin-left w-[115%]"
+            className="text-xs font-light text-[#756d47] leading-tight cursor-pointer block md:transform md:scale-[0.85] md:origin-left md:w-[115%]"
           >
             Li e concordo com a exibição deste relato e os{" "}
             <Dialog>
@@ -162,7 +162,7 @@ export default function TestimonialForm() {
               >
                 Termos de Privacidade
               </DialogTrigger>
-              <DialogContent className="w-[95vw] sm:max-w-md bg-[#e3d9ce] text-[#2e3d30] border-none rounded-[2rem] p-8 shadow-2xl max-h-[85vh] overflow-y-auto">
+              <DialogContent className="w-[95vw] sm:max-w-md bg-[#e3d9ce] text-[#2e3d30] border-none rounded-[2rem] p-8 shadow-2xl max-h-[85dvh] overflow-y-auto">
                 <DialogHeader className="mb-6 border-b border-[#bfa086]/20 pb-4">
                   <DialogTitle className="font-serif text-3xl text-[#2e3d30]">
                     Privacidade

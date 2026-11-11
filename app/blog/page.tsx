@@ -120,16 +120,16 @@ export default async function BlogPage({ searchParams }: BlogProps) {
 
         {/* Navegação da Paginação */}
         {totalPages > 1 && (
-          <nav className="mt-32 flex justify-center items-center gap-6 md:gap-12 border-t border-[#bfa086]/30 pt-10">
+          <nav className="mt-20 md:mt-32 flex flex-wrap justify-center items-center gap-x-6 gap-y-2 md:gap-12 border-t border-[#bfa086]/30 pt-10">
             {currentPage > 1 ? (
               <Link
                 href={`/blog?page=${currentPage - 1}`}
-                className="text-sm font-['Spartan'] uppercase tracking-widest text-[#87381e] hover:text-[#2e3d30] transition-colors flex items-center gap-2"
+                className="text-sm font-['Spartan'] uppercase tracking-widest text-[#87381e] hover:text-[#2e3d30] transition-colors flex items-center gap-2 py-3"
               >
                 &larr; Anteriores
               </Link>
             ) : (
-              <span className="text-sm font-['Spartan'] uppercase tracking-widest text-[#2e3d30]/30 cursor-not-allowed flex items-center gap-2">
+              <span className="text-sm font-['Spartan'] uppercase tracking-widest text-[#2e3d30]/30 cursor-not-allowed flex items-center gap-2 py-3">
                 &larr; Anteriores
               </span>
             )}
@@ -141,12 +141,12 @@ export default async function BlogPage({ searchParams }: BlogProps) {
             {currentPage < totalPages ? (
               <Link
                 href={`/blog?page=${currentPage + 1}`}
-                className="text-sm font-['Spartan'] uppercase tracking-widest text-[#87381e] hover:text-[#2e3d30] transition-colors flex items-center gap-2"
+                className="text-sm font-['Spartan'] uppercase tracking-widest text-[#87381e] hover:text-[#2e3d30] transition-colors flex items-center gap-2 py-3"
               >
                 Próximos &rarr;
               </Link>
             ) : (
-              <span className="text-sm font-['Spartan'] uppercase tracking-widest text-[#2e3d30]/30 cursor-not-allowed flex items-center gap-2">
+              <span className="text-sm font-['Spartan'] uppercase tracking-widest text-[#2e3d30]/30 cursor-not-allowed flex items-center gap-2 py-3">
                 Próximos &rarr;
               </span>
             )}
