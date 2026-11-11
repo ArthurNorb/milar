@@ -22,11 +22,17 @@ function useMediaQuery(query: string): boolean {
   );
 }
 
+const noopSubscribe = () => () => {};
+
 /**
  * Faixa horizontal com loop infinito: avança 1 item a cada `intervalMs`.
  * No desktop (md+) mostra `desktopVisible` itens; no mobile, 1.
  * Os primeiros `visible` itens são clonados no fim da faixa; ao chegar no
  * clone, a posição volta a 0 sem transição.
+ *
+ * `hydrated` é false no HTML do servidor e na hidratação (o servidor não sabe
+ * a largura da tela). Enquanto for false, o componente deve usar classes
+ * responsivas (ex.: `basis-full md:basis-1/3`) em vez das larguras inline.
  */
 export function useAutoSlider(
   count: number,
@@ -34,6 +40,7 @@ export function useAutoSlider(
   intervalMs: number,
   desktopMinWidth = 768,
 ) {
+  const hydrated = useSyncExternalStore(noopSubscribe, () => true, () => false);
   const isDesktop = useMediaQuery(`(min-width: ${desktopMinWidth}px)`);
   const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
   const visible = isDesktop ? desktopVisible : 1;
@@ -143,6 +150,7 @@ export function useAutoSlider(
   };
 
   return {
+    hydrated,
     swipeHandlers,
     active,
     visible,

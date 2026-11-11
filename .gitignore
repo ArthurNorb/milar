@@ -43,3 +43,8 @@ next-env.d.ts
 
 # dados locais de dev (banco e uploads)
 .data/
+
+# dumps e pacotes da migração (contêm dados de clientes)
+*.dump
+migracao-*.sql
+migracao-*.tar.gz

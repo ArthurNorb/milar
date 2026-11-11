@@ -21,9 +21,11 @@ export default function HomeProjectsCarousel({
 }) {
   const slider = useAutoSlider(projects.length, VISIBLE_DESKTOP, INTERVAL_MS);
 
-  const items = slider.active
-    ? [...projects, ...projects.slice(0, slider.visible)]
-    : projects;
+  const { hydrated } = slider;
+  const items =
+    hydrated && slider.active
+      ? [...projects, ...projects.slice(0, slider.visible)]
+      : projects;
 
   return (
     <div
@@ -35,17 +37,22 @@ export default function HomeProjectsCarousel({
       <div className="overflow-hidden touch-pan-y">
         <div
           className={`flex ${slider.animate ? "transition-transform duration-700 ease-out" : ""}`}
-          style={{
-            width: `${(slider.total * 100) / slider.visible}%`,
-            transform: `translateX(-${(slider.idx * 100) / slider.total}%)`,
-          }}
+          // Antes da hidratação o CSS decide: 1 no mobile, VISIBLE_DESKTOP no md+.
+          style={
+            hydrated
+              ? {
+                  width: `${(slider.total * 100) / slider.visible}%`,
+                  transform: `translateX(-${(slider.idx * 100) / slider.total}%)`,
+                }
+              : undefined
+          }
           onTransitionEnd={slider.onTransitionEnd}
         >
           {items.map((project, i) => (
             <div
               key={`${project.id}-${i}`}
-              className="px-2 md:px-3"
-              style={{ width: `${100 / slider.total}%` }}
+              className={hydrated ? "px-2 md:px-3" : "px-2 md:px-3 shrink-0 basis-full md:basis-1/3"}
+              style={hydrated ? { width: `${100 / slider.total}%` } : undefined}
             >
               <Link
                 href="/projetos"
@@ -71,7 +78,7 @@ export default function HomeProjectsCarousel({
         </div>
       </div>
 
-      {slider.active && (
+      {hydrated && slider.active && (
         <SliderArrows
           onPrev={slider.prev}
           onNext={slider.next}

@@ -90,6 +90,7 @@ instrumentation.ts          # Valida env de produção no boot (recusa subir ins
 Dockerfile, compose.prod.yml  # Produção: db + migrate + app (standalone, usuário node) + caddy
 deploy/                     # Caddyfile (Cloudflare + mTLS), deploy.sh, backup.sh, systemd
 DEPLOY.md                   # Runbook da VPS Oracle (VCN, SSH, Cloudflare, backup)
+MIGRACAO.md                 # Vercel + Supabase → VPS (scripts/import-supabase.ts)
 ```
 
 Headers de segurança (CSP, HSTS etc.) ficam em `next.config.ts`. Se adicionar origem externa

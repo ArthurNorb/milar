@@ -22,9 +22,11 @@ export default function TestimonialsCarousel({
     DESKTOP_MIN_WIDTH,
   );
 
-  const items = slider.active
-    ? [...testimonials, ...testimonials.slice(0, slider.visible)]
-    : testimonials;
+  const { hydrated } = slider;
+  const items =
+    hydrated && slider.active
+      ? [...testimonials, ...testimonials.slice(0, slider.visible)]
+      : testimonials;
 
   return (
     <div
@@ -36,17 +38,26 @@ export default function TestimonialsCarousel({
       <div className="overflow-hidden py-3 touch-pan-y">
         <div
           className={`flex ${slider.animate ? "transition-transform duration-700 ease-out" : ""}`}
-          style={{
-            width: `${(slider.total * 100) / slider.visible}%`,
-            transform: `translateX(-${(slider.idx * 100) / slider.total}%)`,
-          }}
+          // Antes da hidratação o CSS decide: 1 abaixo de lg, VISIBLE_DESKTOP no lg+.
+          style={
+            hydrated
+              ? {
+                  width: `${(slider.total * 100) / slider.visible}%`,
+                  transform: `translateX(-${(slider.idx * 100) / slider.total}%)`,
+                }
+              : undefined
+          }
           onTransitionEnd={slider.onTransitionEnd}
         >
           {items.map((testimonial, i) => (
             <div
               key={`${testimonial.id}-${i}`}
-              className="px-2 md:px-6 lg:px-3"
-              style={{ width: `${100 / slider.total}%` }}
+              className={
+                hydrated
+                  ? "px-2 md:px-6 lg:px-3"
+                  : "px-2 md:px-6 lg:px-3 shrink-0 basis-full lg:basis-1/4"
+              }
+              style={hydrated ? { width: `${100 / slider.total}%` } : undefined}
               aria-hidden={i >= testimonials.length ? true : undefined}
             >
               <div className="h-full group bg-[#e3d9ce]/5 md:bg-transparent p-6 md:p-0 rounded-3xl md:rounded-none border border-[#bfa086]/10 md:border-none">
@@ -75,7 +86,7 @@ export default function TestimonialsCarousel({
         </div>
       </div>
 
-      {slider.active && (
+      {hydrated && slider.active && (
         <div className="hidden lg:block">
           <SliderArrows
             onPrev={slider.prev}
