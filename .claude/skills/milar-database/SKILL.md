@@ -38,7 +38,10 @@ app/uploads/[...path]/route.ts   # GET das fotos (só .webp, cache imutável)
 ## Auth
 - Env: `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH` (formato `scrypt:<salt>:<hash>`, sem `$` por causa do dotenv do Next), `SESSION_SECRET` (≥32 chars).
 - Gerar hash: `npm run hash-password -- "senha-forte"`.
-- Cookie `milar_session`: httpOnly, sameSite=lax, secure em produção, 7 dias.
+- Cookie `milar_session` (em produção `__Host-milar_session`): httpOnly, sameSite=strict, secure em produção, 12 h.
+- JWT com `iss`/`aud`, `sub` = `ADMIN_EMAIL` e claim `ver` = `SESSION_VERSION` (trocar a env derruba todas as sessões).
+- Login e envio público de depoimento têm rate limit em memória por IP (`lib/rate-limit.ts`; IP vem do `X-Real-IP` que o Caddy define).
+- Upload: o formato é conferido pelo conteúdo (sharp `metadata()`), não pelo MIME do cliente; `limitInputPixels` 50 MP.
 
 ## Imagens
 - Navegador reduz (`browser-image-compression`, 1920px) → `POST /api/admin/uploads` → `saveProjectImage` (rotate EXIF, sem metadados, 1920px, WebP q78) → URL `/uploads/projects/<uuid>.webp`.

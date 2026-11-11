@@ -1,18 +1,24 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "@/lib/auth";
 import {
+  InvalidImageError,
   MAX_UPLOAD_BYTES,
   isAllowedMime,
   isUploadFolder,
   saveProjectImage,
 } from "@/lib/images";
-import { getErrorMessage } from "@/lib/utils";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
+  }
+
+  // Corta antes de ler o corpo: evita bufferizar um upload gigante.
+  const declared = Number(request.headers.get("content-length") ?? "0");
+  if (declared > MAX_UPLOAD_BYTES + 64 * 1024) {
+    return NextResponse.json({ error: "Imagem maior que 15 MB." }, { status: 413 });
   }
 
   try {
@@ -45,9 +51,13 @@ export async function POST(request: Request) {
     );
     return NextResponse.json({ url });
   } catch (error: unknown) {
+    if (error instanceof InvalidImageError) {
+      return NextResponse.json({ error: error.message }, { status: 415 });
+    }
+    // Detalhe só no log do servidor; o cliente recebe mensagem genérica.
     console.error("Erro no upload:", error);
     return NextResponse.json(
-      { error: `Falha ao processar a imagem: ${getErrorMessage(error)}` },
+      { error: "Falha ao processar a imagem." },
       { status: 500 },
     );
   }

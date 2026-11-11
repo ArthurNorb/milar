@@ -16,6 +16,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+// Renderiza por requisição: o build da imagem Docker não tem acesso ao banco,
+// então um prerender estático congelaria a home vazia. As leituras continuam
+// em cache (unstable_cache com tags), então o custo por requisição é baixo.
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const [testimonials, homeProjects] = await Promise.all([
     getApprovedTestimonials(),

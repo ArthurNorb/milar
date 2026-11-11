@@ -26,7 +26,8 @@ export async function createSession(email: string): Promise<void> {
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    // strict: o cookie do painel nunca acompanha navegação vinda de outro site.
+    sameSite: "strict",
     path: "/",
     maxAge: SESSION_MAX_AGE,
   });
@@ -34,7 +35,15 @@ export async function createSession(email: string): Promise<void> {
 
 export async function destroySession(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete(SESSION_COOKIE);
+  // Mesmos atributos da criação: o navegador ignora a remoção de um cookie
+  // __Host- que não venha com Secure + path=/.
+  cookieStore.set(SESSION_COOKIE, "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/",
+    maxAge: 0,
+  });
 }
 
 export async function isAdmin(): Promise<boolean> {

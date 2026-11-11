@@ -1,0 +1,12 @@
+[Unit]
+Description=Backup do Milar (Postgres + fotos)
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+# Ajuste o caminho se clonar o repositório em outro lugar.
+WorkingDirectory=/opt/milar
+ExecStart=/opt/milar/deploy/backup.sh
+Nice=10
+IOSchedulingClass=idle

@@ -86,7 +86,14 @@ proxy.ts                    # Protege /admin/dashboard/** (valida o cookie)
 drizzle/                    # Migrations geradas
 compose.dev.yml             # Postgres de dev
 run                         # Script de dev (ver Comandos)
+instrumentation.ts          # Valida env de produção no boot (recusa subir inseguro)
+Dockerfile, compose.prod.yml  # Produção: db + migrate + app (standalone, usuário node) + caddy
+deploy/                     # Caddyfile (Cloudflare + mTLS), deploy.sh, backup.sh, systemd
+DEPLOY.md                   # Runbook da VPS Oracle (VCN, SSH, Cloudflare, backup)
 ```
+
+Headers de segurança (CSP, HSTS etc.) ficam em `next.config.ts`. Se adicionar origem externa
+(imagem, script, iframe), libere na CSP de lá.
 
 ## Banco de Dados
 
