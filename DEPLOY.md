@@ -56,16 +56,30 @@ O que esperar e o que fazer:
   `docker-proxy`, pare e me chame: a config do passo 8 é diferente.
 - **Nada na 3010**: ótimo. Se tiver algo, escolha outra porta (ex.: 3020) e troque em
   `APP_PORT` (passo 6) e no `upstream` de `deploy/nginx/milar.conf`.
-- **RAM**: em `free -h`, se a VPS tiver ~1 GB (shape E2.1.Micro), crie **4 GB de swap**
-  (abaixo). O build do Next não cabe em 1 GB sem swap. Em ARM A1 com 6 GB ou mais, 2 GB bastam.
+- **RAM**: em `free -h`, se a VPS tiver ~1 GB (shape **E2.1.Micro**, x86_64), o build **não**
+  roda nela: as imagens são feitas na sua máquina e enviadas por SSH (passo 7). Crie **2 GB de
+  swap** (abaixo) como folga para picos. Em ARM A1 com 6 GB ou mais, o build pode rodar na VPS.
 - **Disco**: precisa de uns 5 GB livres para imagens Docker, banco e fotos.
+
+> **VPS atual (`vnic-portal`)**: E2.1.Micro x86_64, 2 vCPU, 952 MB de RAM (~285 MB livres com
+> o `portal` rodando), sem swap, 41 GB livres, Nginx com o site `portal`, porta 3010 livre,
+> sem Docker. Ou seja: swap obrigatório, Docker a instalar, build pela sua máquina.
+>
+> Medido localmente com os limites do `compose.prod.yml`: app ~75 MB e Postgres ~32 MB depois
+> de 150 requisições simultâneas (tetos de 448 MB e 256 MB). Cabe, mas o espaço é curto. Veja
+> quem mais consome com `ps aux --sort=-rss | head -8`. Se ficar apertado, a Oracle também dá de
+> graça instâncias **Ampere A1** (até 4 OCPU / 24 GB), muito mais folgadas, só que nem sempre há
+> capacidade disponível na região.
 
 Swap (só se `free -h` mostrar `Swap: 0B`):
 
 ```bash
-sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile
+sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile
 sudo mkswap /swapfile && sudo swapon /swapfile
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+# Usa swap só quando precisa (o padrão 60 joga coisa no disco cedo demais)
+echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swap.conf && sudo sysctl -p /etc/sysctl.d/99-swap.conf
+free -h   # agora deve mostrar Swap: 2.0Gi
 ```
 
 ## 2. VCN — Security List
@@ -210,14 +224,37 @@ https (ver `instrumentation.ts`).
 
 ## 7. Subir o app
 
+Na E2.1.Micro o build é feito **na sua máquina** (que também é x86_64) e a imagem pronta vai
+por SSH. Na VPS ficam só o código (compose, Nginx, scripts) e o `.env.production`.
+
+**Na sua máquina**, na pasta do projeto, com tudo commitado e com `git push` feito:
+
 ```bash
-cd /opt/milar
-./deploy/deploy.sh        # build, migrations, sobe db + app
-./deploy/deploy.sh ps     # app deve mostrar 127.0.0.1:3010->3000/tcp
-curl -sI http://127.0.0.1:3010/ | head -1   # HTTP/1.1 200 OK
+./deploy/ship.sh ubuntu@IP_DA_VPS
 ```
 
-Na primeira vez o build demora (5 a 15 min na A1; mais na Micro com swap).
+O script:
+1. recusa rodar com mudanças não commitadas ou não enviadas (a VPS faz `git pull`);
+2. confere se a arquitetura local é igual à da VPS;
+3. faz o build das imagens `milar-app` e `milar-migrate`;
+4. envia as duas por SSH (~120 MB comprimidos; as camadas em comum vão uma vez só);
+5. na VPS, roda `git pull` e `./deploy/deploy.sh`, que aplica as migrations e sobe banco e app.
+
+Na VPS, confira:
+
+```bash
+cd /opt/milar
+./deploy/deploy.sh ps     # app em 127.0.0.1:3010->3000/tcp, migrate com exit 0
+curl -sI http://127.0.0.1:3010/ | head -1   # HTTP/1.1 200 OK
+free -h                   # ver como ficou a memória com tudo rodando
+```
+
+O `deploy.sh` percebe sozinho que a VPS tem pouca RAM e **não tenta buildar**. Se as imagens
+não estiverem lá, ele avisa para usar o `ship.sh`. Em VPS com 2 GB ou mais, ele faz o build ali
+mesmo (ou force com `FORCE_BUILD=1 ./deploy/deploy.sh`).
+
+Limites de memória (em `compose.prod.yml`): Postgres 256 MB, app 448 MB. Se algum estourar, o
+Docker reinicia só aquele container, sem o kernel derrubar o Nginx ou o `portal`.
 
 ## 8. Nginx: adicionar o site do Milar
 
@@ -319,7 +356,8 @@ Assim nenhum dos dois sites fica acessível sem passar pelo WAF/DDoS do Cloudfla
 
 ## Manutenção
 
-- Atualizar o Milar: `cd /opt/milar && git pull && ./deploy/deploy.sh`. O Nginx não precisa de reload.
+- Atualizar o Milar: commit e push, depois `./deploy/ship.sh ubuntu@IP_DA_VPS` na sua máquina.
+  O Nginx não precisa de reload.
 - Rode `npm audit --omit=dev` antes de cada deploy e atualize o que for crítico/alto.
 - Derrubar todas as sessões do admin: troque `SESSION_VERSION` no `.env.production` e faça o deploy.
 - Trocar a senha do admin: gere um novo hash, edite `ADMIN_PASSWORD_HASH` e faça o deploy.

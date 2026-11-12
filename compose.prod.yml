@@ -23,13 +23,18 @@ services:
       POSTGRES_DB: milar
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env.production}
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    # Ajustado para VPS de 1 GB dividida com outro site (E2.1.Micro).
     command: >
       postgres
-        -c max_connections=30
-        -c shared_buffers=256MB
+        -c max_connections=20
+        -c shared_buffers=48MB
+        -c effective_cache_size=192MB
+        -c work_mem=2MB
+        -c maintenance_work_mem=32MB
+        -c max_wal_size=256MB
         -c password_encryption=scram-sha-256
         -c log_connections=off
-    shm_size: 128mb
+    shm_size: 64mb
     volumes:
       - db-data:/var/lib/postgresql/data
     networks:
@@ -39,13 +44,18 @@ services:
       interval: 5s
       timeout: 3s
       retries: 30
-    mem_limit: 1g
+    # Teto de memória: se estourar, o Docker reinicia só este container em vez
+    # de o kernel matar processos do host (Nginx, outro site).
+    mem_limit: 256m
+    memswap_limit: 512m
 
   migrate:
     build:
       context: .
       target: migrator
+    image: milar-migrate:latest
     restart: "no"
+    mem_limit: 128m
     security_opt:
       - no-new-privileges:true
     cap_drop: [ALL]
@@ -66,17 +76,23 @@ services:
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:?defina NEXT_PUBLIC_SITE_URL}
     image: milar-app:latest
     env_file:
-      - .env.production
+      # required: false só para permitir o build na sua máquina (deploy/ship.sh);
+      # na VPS o deploy.sh exige o arquivo.
+      - path: .env.production
+        required: false
     environment:
       DATABASE_URL: postgres://milar:${POSTGRES_PASSWORD}@db:5432/milar
       UPLOADS_DIR: /data/uploads
+      # Heap do Node abaixo do mem_limit, para o GC agir antes do OOM.
+      NODE_OPTIONS: --max-old-space-size=320
     volumes:
       - uploads:/data/uploads
       - next-cache:/app/.next/cache
     tmpfs:
       - /tmp:size=64m
     cap_drop: [ALL]
-    mem_limit: 2g
+    mem_limit: 448m
+    memswap_limit: 896m
     pids_limit: 256
     depends_on:
       db:

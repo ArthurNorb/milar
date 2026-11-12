@@ -24,12 +24,22 @@ COPY . .
 RUN npm run build
 
 # ---------- migrations (one-shot, roda antes do app) ----------
-FROM deps AS migrator
-COPY drizzle.config.ts ./
+# Imagem mínima: só drizzle-orm + postgres (versões do package-lock) e as
+# migrations. Compartilha as camadas base com o runner, então quase não pesa
+# no envio para a VPS.
+FROM ${NODE_IMAGE} AS migrator
+WORKDIR /app
+COPY package-lock.json ./
+RUN DRIZZLE=$(node -p "require('./package-lock.json').packages['node_modules/drizzle-orm'].version") \
+ && PG=$(node -p "require('./package-lock.json').packages['node_modules/postgres'].version") \
+ && npm init -y >/dev/null \
+ && npm install --no-audit --no-fund --omit=dev "drizzle-orm@${DRIZZLE}" "postgres@${PG}" \
+ && npm cache clean --force \
+ && rm package-lock.json
 COPY drizzle ./drizzle
-COPY lib/db/schema.ts ./lib/db/schema.ts
+COPY scripts/migrate.mjs ./migrate.mjs
 USER node
-CMD ["node", "node_modules/drizzle-kit/bin.cjs", "migrate"]
+CMD ["node", "migrate.mjs"]
 
 # ---------- runtime enxuto ----------
 FROM ${NODE_IMAGE} AS runner
