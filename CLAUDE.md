@@ -87,8 +87,8 @@ drizzle/                    # Migrations geradas
 compose.dev.yml             # Postgres de dev
 run                         # Script de dev (ver Comandos)
 instrumentation.ts          # Valida env de produção no boot (recusa subir inseguro)
-Dockerfile, compose.prod.yml  # Produção: db + migrate + app (standalone, usuário node) + caddy
-deploy/                     # Caddyfile (Cloudflare + mTLS), deploy.sh, backup.sh, systemd
+Dockerfile, compose.prod.yml  # Produção: db + migrate + app (standalone, usuário node, só em 127.0.0.1:3010)
+deploy/                     # nginx/ (Cloudflare + mTLS, no Nginx do host), deploy.sh, backup.sh, systemd
 DEPLOY.md                   # Runbook da VPS Oracle (VCN, SSH, Cloudflare, backup)
 MIGRACAO.md                 # Vercel + Supabase → VPS (scripts/import-supabase.ts)
 ```

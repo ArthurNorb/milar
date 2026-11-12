@@ -1,102 +1,121 @@
-# Deploy em produção — VPS Oracle Always Free + Cloudflare
+# Deploy em produção — VPS Oracle (já existente) + Cloudflare
 
-Arquitetura:
+Cenário: a VPS e a VCN já existem e já servem **outro site** pelo **Nginx do host**
+(DNS direto no IP, sem Cloudflare). O Milar entra como mais um site nessa mesma VPS,
+sem mexer no que já funciona.
 
 ```text
-Visitante ──HTTPS──> Cloudflare (WAF, DDoS, cache) ──HTTPS + mTLS──> VPS :443
-                                                                      │
-                                         Caddy (Origin Cert, só aceita Cloudflare)
-                                                                      │ rede "frontend"
-                                                          Next (usuário node, sem caps)
-                                                                      │ rede "backend" (sem internet)
-                                                                  Postgres 17 (sem porta publicada)
+Visitante ─HTTPS─> Cloudflare (WAF, DDoS) ─HTTPS + mTLS─> VPS :443  Nginx do host
+                                                                 ├─ outro site (como já está)
+                                                                 └─ milararquitetura.com
+                                                                      │ 127.0.0.1:3010
+                                                                Docker: Next (usuário node)
+                                                                      │ rede interna
+                                                                Docker: Postgres (sem porta)
 ```
 
-Camadas de proteção: Security List da VCN (só Cloudflare na 443, SSH só do seu IP) →
-Authenticated Origin Pulls (mTLS) no Caddy → headers de segurança, rate limit e
-`requireAdmin()` no app → banco isolado em rede interna.
+Proteções do Milar:
+- **Authenticated Origin Pulls (mTLS)**: no domínio do Milar, o Nginx só aceita conexões
+  com o certificado de cliente do Cloudflare. Quem descobrir o IP da VPS não chega no Milar
+  sem passar pelo Cloudflare. O outro site não é afetado.
+- O app só escuta em `127.0.0.1`. O banco não tem porta publicada.
+- No app: headers de segurança, rate limit no login e nos depoimentos, `requireAdmin()`.
 
 ---
 
-## 1. Criar a instância
+## 0. Descobrir IPs (você fora de casa)
 
-- Shape **VM.Standard.A1.Flex** (Ampere, ARM64), ex.: 2 OCPU / 12 GB. Imagem **Ubuntu 24.04**.
-- Cole sua **chave SSH pública ed25519** (`ssh-keygen -t ed25519`). Não use senha.
-- Rede: VCN com sub-rede pública. Em *Reserved public IPs*, reserve um IP e associe à VNIC
-  (o IP efêmero muda se a instância for recriada).
-- Boot volume: o padrão (47 GB) basta; Always Free permite até 200 GB no total.
-
-## 2. VCN — Security List (ou NSG)
-
-Em *Networking → Virtual Cloud Networks → sua VCN → Security Lists → Default*:
-
-**Remova** a regra padrão `0.0.0.0/0 TCP 22` e as regras ICMP abertas, se quiser.
-
-**Ingress** (todas *stateful*, TCP):
-
-| Origem | Porta | Motivo |
-|---|---|---|
-| `SEU.IP.PUBLICO/32` | 22 | SSH só da sua casa/escritório |
-| cada faixa IPv4 do Cloudflare | 443 | HTTPS só via Cloudflare |
-
-Faixas IPv4 do Cloudflare (confira em <https://www.cloudflare.com/ips-v4>):
-
-```text
-173.245.48.0/20  103.21.244.0/22  103.22.200.0/22  103.31.4.0/22
-141.101.64.0/18  108.162.192.0/18 190.93.240.0/20  188.114.96.0/20
-197.234.240.0/22 198.41.128.0/17  162.158.0.0/15   104.16.0.0/13
-104.24.0.0/14    172.64.0.0/13    131.0.72.0/22
-```
-
-Mantenha também a regra ICMP tipo 3 código 4 (Path MTU) que vem por padrão.
-**Egress**: `0.0.0.0/0` todos os protocolos (necessário para apt, Docker Hub e build).
-
-> Seu IP de casa mudou e o SSH parou? Atualize a regra pelo console da Oracle, ou use o
-> *Cloud Shell* / *Bastion* da própria Oracle (gratuitos) para entrar.
-
-## 3. Sistema operacional
-
-Entre como `ubuntu` (`ssh ubuntu@IP`) e rode:
+**O seu IP público agora** (para liberar o SSH na VCN a partir de onde você está):
 
 ```bash
-sudo apt update && sudo apt full-upgrade -y
-sudo apt install -y unattended-upgrades fail2ban git
-sudo timedatectl set-timezone America/Sao_Paulo
+curl -4 ifconfig.me ; echo
+```
 
-# Atualizações de segurança automáticas, com reboot às 04:30 se precisar
-sudo dpkg-reconfigure -plow unattended-upgrades
-sudo tee /etc/apt/apt.conf.d/52milar >/dev/null <<'EOF'
-Unattended-Upgrade::Automatic-Reboot "true";
-Unattended-Upgrade::Automatic-Reboot-Time "04:30";
-EOF
+Ou abra <https://ifconfig.me> no navegador do celular/notebook. Anote: é o `SEU.IP`.
 
-# Swap de 2 GB (o build do Next consome memória)
-sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile
+> IP de 4G/5G, hotel ou café muda com frequência. Se o SSH parar de responder, rode de
+> novo e atualize a regra (passo 2). Quando voltar para casa, troque pelo IP de casa.
+
+**O IP da VPS:** console da Oracle → *☰ → Compute → Instances* → clique na instância →
+campo **Public IP address**. Ou, se já estiver dentro da VPS: `curl -4 ifconfig.me`.
+
+## 1. Reconhecer a VPS
+
+```bash
+ssh ubuntu@IP_DA_VPS          # ou o usuário que você usa (opc, se for Oracle Linux)
+
+uname -m; nproc; free -h; df -h /           # arquitetura, CPU, RAM, disco
+sudo ss -ltnp | grep -E ':(80|443|3010) '   # quem escuta nas portas
+ls /etc/nginx/sites-enabled/                # sites do Nginx (se aparecer, é Nginx mesmo)
+docker --version; docker compose version    # Docker já instalado?
+```
+
+O que esperar e o que fazer:
+
+- **80/443 com `nginx`**: é o cenário deste guia. Se aparecer `caddy`, `apache2` ou
+  `docker-proxy`, pare e me chame: a config do passo 8 é diferente.
+- **Nada na 3010**: ótimo. Se tiver algo, escolha outra porta (ex.: 3020) e troque em
+  `APP_PORT` (passo 6) e no `upstream` de `deploy/nginx/milar.conf`.
+- **RAM**: em `free -h`, se a VPS tiver ~1 GB (shape E2.1.Micro), crie **4 GB de swap**
+  (abaixo). O build do Next não cabe em 1 GB sem swap. Em ARM A1 com 6 GB ou mais, 2 GB bastam.
+- **Disco**: precisa de uns 5 GB livres para imagens Docker, banco e fotos.
+
+Swap (só se `free -h` mostrar `Swap: 0B`):
+
+```bash
+sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile
 sudo mkswap /swapfile && sudo swapon /swapfile
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
-### SSH
+## 2. VCN — Security List
+
+Console da Oracle → *Networking → Virtual Cloud Networks* → sua VCN → *Security Lists* →
+a lista da sub-rede da VPS (normalmente *Default Security List*).
+
+**Para o Milar não precisa abrir nada novo**: o outro site já usa 80/443.
+
+Sobre o **SSH (22)**, veja como está a regra hoje:
+
+- Se estiver `0.0.0.0/0` e você quiser travar no seu IP: **Add Ingress Rules** →
+  *Source CIDR* `SEU.IP/32`, *IP Protocol* TCP, *Destination Port* `22`. Salve,
+  **teste o SSH numa nova janela** e só então apague a regra `0.0.0.0/0` da 22.
+- Se você vai ficar trocando de rede (viagem), é aceitável deixar a 22 aberta **desde que**
+  o SSH aceite só chave e o fail2ban esteja ligado (passo 3).
+- Sem SSH nenhum? O console da Oracle tem **Cloud Shell** (ícone `>_` no topo) e
+  *Instance → Console connection*, que funcionam sem a porta 22.
+
+**Não restrinja a 443 às faixas do Cloudflare ainda**: o outro site está com DNS direto e
+cairia. Isso fica para depois que ele também passar pelo Cloudflare (passo 11).
+
+## 3. Endurecer o sistema (só o que faltar)
+
+Esses passos são seguros para o outro site. Pule o que já estiver feito.
 
 ```bash
-sudo tee /etc/ssh/sshd_config.d/99-milar.conf >/dev/null <<'EOF'
+# Atualizações de segurança automáticas
+sudo apt update && sudo apt install -y unattended-upgrades fail2ban git
+sudo dpkg-reconfigure -plow unattended-upgrades
+```
+
+**SSH só com chave.** Antes, confirme que você entra com chave (se o `ssh` não pediu senha,
+é chave). Depois:
+
+```bash
+sudo tee /etc/ssh/sshd_config.d/99-hardening.conf >/dev/null <<'EOF'
 PermitRootLogin no
 PasswordAuthentication no
 KbdInteractiveAuthentication no
-PubkeyAuthentication yes
-AuthenticationMethods publickey
 MaxAuthTries 3
 LoginGraceTime 20
 X11Forwarding no
-AllowAgentForwarding no
-AllowUsers ubuntu
 EOF
 sudo sshd -t && sudo systemctl reload ssh
 ```
 
-Abra **outra** sessão SSH para confirmar que ainda entra antes de fechar a atual.
+**Abra outra janela e confirme que o SSH ainda entra** antes de fechar a atual.
 
-### fail2ban
+**fail2ban** para o SSH:
 
 ```bash
 sudo tee /etc/fail2ban/jail.d/sshd.local >/dev/null <<'EOF'
@@ -110,20 +129,15 @@ EOF
 sudo systemctl enable --now fail2ban
 ```
 
-### Firewall do host (iptables da Oracle)
+**Firewall do host:** a imagem Ubuntu da Oracle usa `iptables` em `/etc/iptables/rules.v4`.
+Como o outro site já funciona, 80/443 já estão liberadas ali. **Não instale UFW.** O app do
+Milar escuta só em `127.0.0.1`, então não precisa de regra nova.
 
-A imagem Ubuntu da Oracle já vem com `iptables` restritivo em `/etc/iptables/rules.v4`
-(só 22 liberado, `REJECT` no fim). **Não instale UFW** (conflita com essas regras e com o
-Docker) e **não precisa abrir a 443 ali**: porta publicada pelo Docker passa pela cadeia
-`FORWARD`/`DOCKER`, não pela `INPUT`. Quem filtra a 443 é a VCN (passo 2) e o mTLS do Caddy.
-
-Confira depois do deploy: `sudo iptables -L INPUT -n` deve continuar com só a 22.
-
-### Docker (repositório oficial, ARM64)
+## 4. Docker (se ainda não tiver)
 
 ```bash
 curl -fsSL https://get.docker.com | sudo sh
-sudo usermod -aG docker ubuntu   # saia e entre de novo no SSH
+sudo usermod -aG docker $USER      # saia e entre de novo no SSH
 
 sudo tee /etc/docker/daemon.json >/dev/null <<'EOF'
 {
@@ -136,43 +150,41 @@ EOF
 sudo systemctl restart docker
 ```
 
-> Estar no grupo `docker` equivale a ser root. Só o seu usuário deve estar nele.
+> O Docker cria regras próprias no iptables. **Não rode `netfilter-persistent save`**
+> com o Docker ligado, senão as regras dele ficam salvas duplicadas no boot.
+> Estar no grupo `docker` equivale a ser root: só o seu usuário deve estar nele.
 
-## 4. Cloudflare
+## 5. Cloudflare (só o domínio do Milar)
 
-1. Adicione o domínio ao Cloudflare e troque os nameservers no registro.br.
-2. **DNS**: registros `A` para `@` e `www` → IP reservado da VPS, **proxy ligado (nuvem laranja)**.
-3. **SSL/TLS → Overview**: modo **Full (strict)**.
-4. **SSL/TLS → Edge Certificates**: *Always Use HTTPS* ligado, *Minimum TLS* 1.2,
-   *HSTS* ligado (max-age 12 meses, incluir subdomínios, preload só quando tiver certeza).
+1. Adicione `milararquitetura.com` no Cloudflare (plano Free). Ele importa os registros
+   atuais. **Mantenha `MX` e `TXT`** (e-mail, verificações).
+2. **DNS**: `A @ → IP_DA_VPS` e `A www → IP_DA_VPS`, **proxy ligado (nuvem laranja)**.
+   Se o domínio ainda está na Vercel, siga o `MIGRACAO.md`, que diz quando trocar os nameservers.
+3. **SSL/TLS → Overview**: **Full (strict)**.
+4. **SSL/TLS → Edge Certificates**: *Always Use HTTPS* ligado, *Minimum TLS* 1.2, HSTS ligado.
 5. **SSL/TLS → Origin Server → Create Certificate**: RSA, hosts `milararquitetura.com` e
-   `*.milararquitetura.com`, validade 15 anos. Salve o certificado e a chave.
+   `*.milararquitetura.com`, 15 anos. Guarde o certificado e a chave.
 6. **SSL/TLS → Origin Server → Authenticated Origin Pulls**: **ligar**.
-   Baixe a CA: <https://developers.cloudflare.com/ssl/static/authenticated_origin_pull_ca.pem>
-7. **Security → WAF → Rate limiting rules** (o plano grátis permite 1 regra):
-   `URI Path starts with /admin` e método `POST` → 10 requisições / 1 min por IP → *Block* 10 min.
+7. **Security → WAF → Rate limiting rules**: `URI Path starts with /admin` e método `POST`
+   → 10 req/min por IP → *Block* 10 min.
 8. **Security → Bots**: *Bot Fight Mode* ligado.
-9. (Opcional, recomendado) **Zero Trust → Access → Applications**: proteja
-   `milararquitetura.com/admin*` exigindo e-mail da arquiteta (código por e-mail, grátis até 50 usuários).
-   Assim o login do painel nem aparece para quem não passou pelo Access.
-10. **Caching → Cache Rules**: *Bypass cache* para `URI Path starts with /admin` e `/api/`.
+9. **Caching → Cache Rules**: *Bypass cache* para `/admin` e `/api/`.
+10. (Opcional) **Zero Trust → Access**: proteja `milararquitetura.com/admin*` com o e-mail da arquiteta.
 
-Na VPS, coloque os arquivos (só root lê a chave):
+Na VPS, os certificados (do root, só o root lê):
 
 ```bash
 sudo mkdir -p /etc/milar/certs
-sudo nano /etc/milar/certs/origin.pem    # certificado de origem
-sudo nano /etc/milar/certs/origin.key    # chave privada
+sudo nano /etc/milar/certs/origin.pem    # cole o certificado de origem
+sudo nano /etc/milar/certs/origin.key    # cole a chave privada
 sudo curl -fsSL -o /etc/milar/certs/cloudflare-origin-pull-ca.pem \
   https://developers.cloudflare.com/ssl/static/authenticated_origin_pull_ca.pem
 sudo chmod 700 /etc/milar/certs && sudo chmod 600 /etc/milar/certs/*
 ```
 
-> O container do Caddy roda como root e consegue ler os arquivos `600` do root.
+## 6. Código e segredos
 
-## 5. Segredos
-
-Na **sua máquina** (dev), gere o hash da senha do admin (use uma senha longa, 16+ caracteres):
+Na **sua máquina**, gere o hash da senha do admin (senha longa, 16+ caracteres):
 
 ```bash
 npm run hash-password -- "uma-frase-longa-e-unica"
@@ -181,46 +193,67 @@ npm run hash-password -- "uma-frase-longa-e-unica"
 Na **VPS**:
 
 ```bash
-sudo mkdir -p /opt/milar && sudo chown ubuntu:ubuntu /opt/milar
-git clone <url-do-repo> /opt/milar && cd /opt/milar
+sudo mkdir -p /opt/milar && sudo chown $USER:$USER /opt/milar
+git clone -b dev <url-do-repo> /opt/milar && cd /opt/milar
 cp deploy/env.production.example .env.production
 chmod 600 .env.production
 openssl rand -hex 32      # → POSTGRES_PASSWORD
 openssl rand -base64 48   # → SESSION_SECRET
-nano .env.production      # preencha tudo
+nano .env.production      # preencha tudo (ADMIN_EMAIL, ADMIN_PASSWORD_HASH, APP_PORT...)
 ```
 
-Se o repositório for privado, use uma *deploy key* só de leitura (`ssh-keygen -t ed25519 -f ~/.ssh/milar_deploy`)
-cadastrada no GitHub em *Settings → Deploy keys*.
+Repositório privado: crie uma *deploy key* só leitura (`ssh-keygen -t ed25519 -f ~/.ssh/milar_deploy`)
+e cadastre em *GitHub → Settings → Deploy keys*.
 
-O app **se recusa a subir** se `SESSION_SECRET`, `ADMIN_PASSWORD_HASH`, `NEXT_PUBLIC_SITE_URL` (https)
-etc. estiverem ausentes ou inválidos (ver `instrumentation.ts`).
+O app **se recusa a subir** com segredo fraco, hash inválido ou `NEXT_PUBLIC_SITE_URL` sem
+https (ver `instrumentation.ts`).
 
-## 6. Subir
+## 7. Subir o app
 
 ```bash
 cd /opt/milar
-./deploy/deploy.sh        # build, migrations e sobe db + app + caddy
-./deploy/deploy.sh ps     # status
-./deploy/deploy.sh logs   # logs
+./deploy/deploy.sh        # build, migrations, sobe db + app
+./deploy/deploy.sh ps     # app deve mostrar 127.0.0.1:3010->3000/tcp
+curl -sI http://127.0.0.1:3010/ | head -1   # HTTP/1.1 200 OK
 ```
 
-Atualizar depois de um push: `git pull && ./deploy/deploy.sh`.
+Na primeira vez o build demora (5 a 15 min na A1; mais na Micro com swap).
 
-Fotos do seed (Unsplash) não são criadas em produção: o `npm run seed` não roda aqui.
-
-## 7. Backup local
+## 8. Nginx: adicionar o site do Milar
 
 ```bash
-sudo cp deploy/systemd/milar-backup.* /etc/systemd/system/
+cd /opt/milar
+sudo cp deploy/nginx/milar-tls.conf /etc/nginx/snippets/milar-tls.conf
+sudo cp deploy/nginx/milar.conf /etc/nginx/sites-available/milar.conf
+sudo ln -s /etc/nginx/sites-available/milar.conf /etc/nginx/sites-enabled/milar.conf
+
+sudo nginx -t                    # TEM que dar "syntax is ok" e "test is successful"
+sudo systemctl reload nginx      # reload não derruba o outro site
+```
+
+Se o `nginx -t` falhar, **não recarregue**. O Nginx continua rodando com a config antiga,
+então o outro site não cai. Erros comuns:
+
+| Erro | Solução |
+|---|---|
+| `duplicate listen options for [::]:443` | o outro site declara `[::]:443` com opções (`ipv6only`, `default_server`); apague as linhas `listen [::]:...` do `milar.conf` |
+| `cannot load certificate "/etc/milar/certs/..."` | refaça o passo 5 (arquivos e permissões) |
+| `unknown directive "set_real_ip_from"` | `sudo apt install libnginx-mod-http-realip` (raro no Ubuntu) |
+
+Para desfazer: `sudo rm /etc/nginx/sites-enabled/milar.conf && sudo systemctl reload nginx`.
+
+## 9. Backup local
+
+```bash
+sudo cp /opt/milar/deploy/systemd/milar-backup.* /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now milar-backup.timer
-sudo systemctl start milar-backup.service && ls -lh /var/backups/milar
+sudo systemctl start milar-backup.service && sudo ls -lh /var/backups/milar
 ```
 
 Diário às 03:30, retenção de 14 dias em `/var/backups/milar` (só root lê).
-**O backup local não protege contra perda da VM** — copie de vez em quando para fora:
-`scp ubuntu@IP:/var/backups/milar/* ./backups/` (precisa de `sudo chmod` ou rodar via `sudo`).
+**Não protege contra perda da VM**: copie de vez em quando para fora
+(`sudo tar -C /var/backups -czf - milar | ssh sua-maquina 'cat > milar-backups.tgz'`, ou `scp`).
 
 ### Restaurar
 
@@ -235,39 +268,61 @@ sudo docker run --rm -i -v milar_uploads:/data alpine \
 $C start app
 ```
 
-## 8. Checklist de verificação
+## 10. Checklist
 
-De **fora** da VPS:
+De **fora** da VPS (sua máquina):
 
 ```bash
-# Só a 443 (e a 22, a partir do seu IP) devem responder
-nmap -Pn -p 22,80,443,3000,5432 IP_DA_VPS
+# Via Cloudflare: headers de segurança e "server: cloudflare"
+curl -sI https://milararquitetura.com | grep -iE 'server|strict-transport|content-security|x-frame'
 
-# Acesso direto à origem, sem o certificado de cliente do Cloudflare → handshake recusado
-curl -vk https://IP_DA_VPS/ --resolve milararquitetura.com:443:IP_DA_VPS
+# Direto no IP com o domínio do Milar, sem o certificado do Cloudflare → 400
+curl -sk -o /dev/null -w '%{http_code}\n' --resolve milararquitetura.com:443:IP_DA_VPS https://milararquitetura.com/
 
-# Via Cloudflare: headers de segurança presentes e sem X-Powered-By
-curl -sI https://milararquitetura.com | grep -iE 'strict-transport|content-security|x-frame|x-content-type|powered'
+# Porta do app e do banco fechadas de fora (devem dar timeout/recusado)
+nc -vz -w 3 IP_DA_VPS 3010; nc -vz -w 3 IP_DA_VPS 5432
 ```
 
 Na VPS:
 
 ```bash
-./deploy/deploy.sh ps                       # só o caddy com 0.0.0.0:443
+./deploy/deploy.sh ps                                      # app em 127.0.0.1:3010
 docker compose --env-file .env.production -f compose.prod.yml exec app id   # uid=1000(node)
-sudo iptables -L INPUT -n                   # 443 não precisa estar aqui
+sudo tail -f /var/log/nginx/milar.access.log               # IPs reais dos visitantes
 sudo fail2ban-client status sshd
 ```
 
-No site: login do admin funciona; 6 senhas erradas seguidas → "Muitas tentativas";
-envio de depoimento funciona e fica pendente; upload de foto funciona.
+E confira que **o outro site continua no ar**.
+
+No Milar: o login do admin funciona; 6 senhas erradas seguidas mostram "Muitas tentativas";
+o depoimento enviado fica pendente; o upload de foto funciona.
+
+## 11. Depois: outro site no Cloudflare e VCN fechada
+
+Quando quiser passar o outro site pelo Cloudflare também:
+
+1. Adicione o domínio dele no Cloudflare, `A → IP_DA_VPS`, nuvem laranja, SSL **Full (strict)**.
+   Se ele usa Let's Encrypt (certbot), a renovação continua funcionando via Cloudflare.
+   Opcionalmente, troque por um Origin Certificate como no Milar.
+2. Com **os dois** sites atrás do Cloudflare, restrinja na Security List as portas **80 e 443**
+   às faixas do Cloudflare (<https://www.cloudflare.com/ips-v4>) e apague as regras `0.0.0.0/0`
+   dessas portas:
+
+   ```text
+   173.245.48.0/20  103.21.244.0/22  103.22.200.0/22  103.31.4.0/22
+   141.101.64.0/18  108.162.192.0/18 190.93.240.0/20  188.114.96.0/20
+   197.234.240.0/22 198.41.128.0/17  162.158.0.0/15   104.16.0.0/13
+   104.24.0.0/14    172.64.0.0/13    131.0.72.0/22
+   ```
+
+Assim nenhum dos dois sites fica acessível sem passar pelo WAF/DDoS do Cloudflare.
 
 ## Manutenção
 
-- `git pull && ./deploy/deploy.sh` também atualiza as imagens base (`--pull`).
+- Atualizar o Milar: `cd /opt/milar && git pull && ./deploy/deploy.sh`. O Nginx não precisa de reload.
 - Rode `npm audit --omit=dev` antes de cada deploy e atualize o que for crítico/alto.
-- Derrubar todas as sessões do admin: troque `SESSION_VERSION` no `.env.production` e rode o deploy.
-- Trocar a senha do admin: gere novo hash, edite `ADMIN_PASSWORD_HASH`, rode o deploy.
-- Revise as faixas do Cloudflare (VCN e `deploy/Caddyfile`) a cada alguns meses.
-- **Always Free**: a Oracle pode recuperar instâncias A1 ociosas (CPU < 20% por 7 dias) em contas
-  sem cartão "Pay As You Go". Converter a conta para PAYG (sem custo se ficar no free tier) evita isso.
+- Derrubar todas as sessões do admin: troque `SESSION_VERSION` no `.env.production` e faça o deploy.
+- Trocar a senha do admin: gere um novo hash, edite `ADMIN_PASSWORD_HASH` e faça o deploy.
+- Revise as faixas do Cloudflare (`deploy/nginx/milar.conf` e VCN) a cada alguns meses.
+- **Always Free**: a Oracle pode recuperar instâncias ociosas em contas sem *Pay As You Go*.
+  Converter a conta para PAYG (sem custo se ficar no free tier) evita isso.

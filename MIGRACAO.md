@@ -89,12 +89,12 @@ apareceram para aprovação.
 
 ## 3. Preparar a VPS
 
-Siga o [DEPLOY.md](DEPLOY.md) **até o passo 6** (instância, VCN, SSH, Docker,
-certificados do Cloudflare, `.env.production`, `./deploy/deploy.sh`).
+Siga o [DEPLOY.md](DEPLOY.md) **até o passo 8** (reconhecer a VPS, SSH, Docker,
+certificados do Cloudflare, `.env.production`, `./deploy/deploy.sh`, site no Nginx).
 
 Diferenças por ser migração:
 
-- No **passo 4 do DEPLOY.md (Cloudflare)**, ao adicionar o domínio, o Cloudflare
+- No **passo 5 do DEPLOY.md (Cloudflare)**, ao adicionar o domínio, o Cloudflare
   importa os registros DNS atuais. **Não troque os nameservers ainda.** Só revise:
   - `A @` e `CNAME www` (hoje apontam para a Vercel, ex.: `76.76.21.21` /
     `cname.vercel-dns.com`) → troque para `A @ IP_DA_VPS` e `A www IP_DA_VPS`, nuvem laranja.
@@ -144,11 +144,11 @@ shred -u /tmp/migracao-dados.sql /tmp/migracao-fotos.tar.gz
 
 Apague também os dois arquivos da sua máquina depois.
 
-Teste a produção antes do DNS, de dentro da VPS (o Caddy só aceita o Cloudflare, então
+Teste a produção antes do DNS, de dentro da VPS (o Nginx só aceita o Cloudflare no domínio do Milar, então
 o teste vai direto no app):
 
 ```bash
-$C exec app wget -qO- http://127.0.0.1:3000/projetos | grep -o '<title>[^<]*'
+curl -s http://127.0.0.1:3010/projetos | grep -o '<title>[^<]*'
 ```
 
 ## 5. Trocar o DNS
@@ -167,7 +167,7 @@ curl -sI https://milararquitetura.com | grep -iE 'server|strict-transport|conten
 # deve aparecer "server: cloudflare" e os headers de segurança
 ```
 
-Faça o checklist do passo 8 do DEPLOY.md e peça para a Giovanna:
+Faça o checklist do passo 10 do DEPLOY.md (inclusive: o outro site da VPS continua no ar) e peça para a Giovanna:
 
 - entrar em `/admin` com o **login novo** (o e-mail/senha do Supabase não valem mais);
 - aprovar um depoimento e enviar uma foto de teste.

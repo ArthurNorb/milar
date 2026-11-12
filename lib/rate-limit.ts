@@ -47,7 +47,7 @@ export function resetRateLimit(key: string): void {
 }
 
 /**
- * IP do visitante. Em produção o Caddy sobrescreve X-Real-IP com o IP real
+ * IP do visitante. Em produção o Nginx do host sobrescreve X-Real-IP com o IP real
  * (vindo do CF-Connecting-IP, aceito só das faixas do Cloudflare), então o
  * cliente não consegue forjá-lo. Sem proxy (dev) cai em "local".
  */

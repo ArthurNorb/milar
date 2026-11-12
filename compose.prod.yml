@@ -1,6 +1,7 @@
 # Produção (VPS Oracle). Use sempre via deploy/deploy.sh, que passa
-# --env-file .env.production. Só o Caddy publica porta (443); banco e app
-# ficam em redes internas do Docker.
+# --env-file .env.production. O app só escuta em 127.0.0.1:APP_PORT (padrão
+# 3010) e o Nginx do host faz HTTPS + Cloudflare; o banco fica numa rede
+# interna do Docker, sem porta publicada.
 name: milar
 
 x-hardening: &hardening
@@ -82,30 +83,12 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+    ports:
+      # Só no loopback: quem fala com a internet é o Nginx do host
+      # (deploy/nginx/milar.conf). Nada de 0.0.0.0 aqui.
+      - "127.0.0.1:${APP_PORT:-3010}:3000"
     networks:
       - backend
-      - frontend
-
-  caddy:
-    <<: *hardening
-    image: caddy:2-alpine
-    ports:
-      # Só HTTPS. A VCN da Oracle libera 443 apenas para as faixas do Cloudflare.
-      - "443:443"
-      - "443:443/udp"
-    environment:
-      SITE_DOMAIN: ${SITE_DOMAIN:?defina SITE_DOMAIN}
-    volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - /etc/milar/certs:/etc/caddy/certs:ro
-      - caddy-data:/data
-      - caddy-config:/config
-    cap_drop: [ALL]
-    cap_add: [NET_BIND_SERVICE]
-    mem_limit: 256m
-    depends_on:
-      - app
-    networks:
       - frontend
 
 networks:
@@ -118,5 +101,3 @@ volumes:
   db-data:
   uploads:
   next-cache:
-  caddy-data:
-  caddy-config:

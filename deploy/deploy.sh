@@ -34,6 +34,10 @@ case "${1:-up}" in
     "${COMPOSE[@]}" up -d --remove-orphans
     "${COMPOSE[@]}" ps
     docker image prune -f >/dev/null
+    # Confere o Nginx do host (não recarrega sozinho: isso afeta os outros sites).
+    if command -v nginx >/dev/null 2>&1 && ! sudo nginx -t 2>/dev/null; then
+      echo "Atenção: 'sudo nginx -t' falhou. Corrija antes de rodar 'sudo systemctl reload nginx'." >&2
+    fi
     ;;
   logs) "${COMPOSE[@]}" logs -f --tail=200 ;;
   ps) "${COMPOSE[@]}" ps ;;

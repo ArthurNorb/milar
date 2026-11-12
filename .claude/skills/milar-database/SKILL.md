@@ -40,7 +40,7 @@ app/uploads/[...path]/route.ts   # GET das fotos (só .webp, cache imutável)
 - Gerar hash: `npm run hash-password -- "senha-forte"`.
 - Cookie `milar_session` (em produção `__Host-milar_session`): httpOnly, sameSite=strict, secure em produção, 12 h.
 - JWT com `iss`/`aud`, `sub` = `ADMIN_EMAIL` e claim `ver` = `SESSION_VERSION` (trocar a env derruba todas as sessões).
-- Login e envio público de depoimento têm rate limit em memória por IP (`lib/rate-limit.ts`; IP vem do `X-Real-IP` que o Caddy define).
+- Login e envio público de depoimento têm rate limit em memória por IP (`lib/rate-limit.ts`; IP vem do `X-Real-IP` que o Nginx do host define).
 - Upload: o formato é conferido pelo conteúdo (sharp `metadata()`), não pelo MIME do cliente; `limitInputPixels` 50 MP.
 
 ## Imagens
