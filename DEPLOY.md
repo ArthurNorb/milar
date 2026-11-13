@@ -7,7 +7,7 @@ sem mexer no que já funciona.
 ```text
 Visitante ─HTTPS─> Cloudflare (WAF, DDoS) ─HTTPS + mTLS─> VPS :443  Nginx do host
                                                                  ├─ outro site (como já está)
-                                                                 └─ milararquitetura.com
+                                                                 └─ milararquitetura.com.br
                                                                       │ 127.0.0.1:3010
                                                                 Docker: Next (usuário node)
                                                                       │ rede interna
@@ -170,20 +170,20 @@ sudo systemctl restart docker
 
 ## 5. Cloudflare (só o domínio do Milar)
 
-1. Adicione `milararquitetura.com` no Cloudflare (plano Free). Ele importa os registros
+1. Adicione `milararquitetura.com.br` no Cloudflare (plano Free). Ele importa os registros
    atuais. **Mantenha `MX` e `TXT`** (e-mail, verificações).
 2. **DNS**: `A @ → IP_DA_VPS` e `A www → IP_DA_VPS`, **proxy ligado (nuvem laranja)**.
    Se o domínio ainda está na Vercel, siga o `MIGRACAO.md`, que diz quando trocar os nameservers.
 3. **SSL/TLS → Overview**: **Full (strict)**.
 4. **SSL/TLS → Edge Certificates**: *Always Use HTTPS* ligado, *Minimum TLS* 1.2, HSTS ligado.
-5. **SSL/TLS → Origin Server → Create Certificate**: RSA, hosts `milararquitetura.com` e
-   `*.milararquitetura.com`, 15 anos. Guarde o certificado e a chave.
+5. **SSL/TLS → Origin Server → Create Certificate**: RSA, hosts `milararquitetura.com.br` e
+   `*.milararquitetura.com.br`, 15 anos. Guarde o certificado e a chave.
 6. **SSL/TLS → Origin Server → Authenticated Origin Pulls**: **ligar**.
 7. **Security → WAF → Rate limiting rules**: `URI Path starts with /admin` e método `POST`
    → 10 req/min por IP → *Block* 10 min.
 8. **Security → Bots**: *Bot Fight Mode* ligado.
 9. **Caching → Cache Rules**: *Bypass cache* para `/admin` e `/api/`.
-10. (Opcional) **Zero Trust → Access**: proteja `milararquitetura.com/admin*` com o e-mail da arquiteta.
+10. (Opcional) **Zero Trust → Access**: proteja `milararquitetura.com.br/admin*` com o e-mail da arquiteta.
 
 Na VPS, os certificados (do root, só o root lê):
 
@@ -311,10 +311,10 @@ De **fora** da VPS (sua máquina):
 
 ```bash
 # Via Cloudflare: headers de segurança e "server: cloudflare"
-curl -sI https://milararquitetura.com | grep -iE 'server|strict-transport|content-security|x-frame'
+curl -sI https://milararquitetura.com.br | grep -iE 'server|strict-transport|content-security|x-frame'
 
 # Direto no IP com o domínio do Milar, sem o certificado do Cloudflare → 400
-curl -sk -o /dev/null -w '%{http_code}\n' --resolve milararquitetura.com:443:IP_DA_VPS https://milararquitetura.com/
+curl -sk -o /dev/null -w '%{http_code}\n' --resolve milararquitetura.com.br:443:IP_DA_VPS https://milararquitetura.com.br/
 
 # Porta do app e do banco fechadas de fora (devem dar timeout/recusado)
 nc -vz -w 3 IP_DA_VPS 3010; nc -vz -w 3 IP_DA_VPS 5432

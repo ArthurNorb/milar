@@ -163,7 +163,7 @@ curl -s http://127.0.0.1:3010/projetos | grep -o '<title>[^<]*'
 Quando o Cloudflare ficar **Active**:
 
 ```bash
-curl -sI https://milararquitetura.com | grep -iE 'server|strict-transport|content-security'
+curl -sI https://milararquitetura.com.br | grep -iE 'server|strict-transport|content-security'
 # deve aparecer "server: cloudflare" e os headers de segurança
 ```
 

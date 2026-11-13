@@ -12,7 +12,7 @@ cd "$(dirname "$0")/.."
 
 HOST="${1:-}"
 REMOTE_DIR="${REMOTE_DIR:-/opt/milar}"
-SITE_URL="${NEXT_PUBLIC_SITE_URL:-https://milararquitetura.com}"
+SITE_URL="${NEXT_PUBLIC_SITE_URL:-https://milararquitetura.com.br}"
 
 if [ -z "$HOST" ]; then
   echo "uso: $0 usuario@IP_DA_VPS" >&2
