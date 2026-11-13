@@ -20,7 +20,7 @@ if [ "$perms" != "600" ] && [ "$perms" != "400" ]; then
 fi
 
 for f in origin.pem origin.key cloudflare-origin-pull-ca.pem; do
-  if [ ! -f "/etc/milar/certs/$f" ]; then
+  if ! sudo -n test -f "/etc/milar/certs/$f"; then
     echo "Falta /etc/milar/certs/$f (veja DEPLOY.md, passo Cloudflare)." >&2
     exit 1
   fi
