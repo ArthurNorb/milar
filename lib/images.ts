@@ -17,7 +17,7 @@ const ALLOWED_MIME = new Set([
 ]);
 
 /** Subpastas de UPLOADS_DIR aceitas no upload. */
-export const UPLOAD_FOLDERS = ["projects", "blog"] as const;
+export const UPLOAD_FOLDERS = ["projects", "blog", "site"] as const;
 export type UploadFolder = (typeof UPLOAD_FOLDERS)[number];
 
 export function isUploadFolder(value: unknown): value is UploadFolder {

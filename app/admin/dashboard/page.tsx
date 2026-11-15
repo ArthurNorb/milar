@@ -5,11 +5,12 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PortfolioManager from "./portfolio-manager";
 import TestimonialsManager from "./testimonials-manager";
 import BlogManager from "./blog-manager";
-import { FolderKanban, MessageSquare, Newspaper } from "lucide-react";
+import HomeManager from "./home-manager";
+import { FolderKanban, House, MessageSquare, Newspaper } from "lucide-react";
 
-type Tab = "portfolio" | "testimonials" | "blog";
+type Tab = "portfolio" | "testimonials" | "blog" | "home";
 
-const TABS: readonly Tab[] = ["portfolio", "testimonials", "blog"];
+const TABS: readonly Tab[] = ["portfolio", "testimonials", "blog", "home"];
 
 function isTab(value: string | null): value is Tab {
   return TABS.includes(value as Tab);
@@ -71,6 +72,12 @@ function AdminDashboard() {
             icon={<Newspaper className="w-4 h-4" />}
             label="Blog"
           />
+          <TabButton
+            active={activeTab === "home"}
+            onClick={() => setActiveTab("home")}
+            icon={<House className="w-4 h-4" />}
+            label="Home"
+          />
         </div>
       </div>
 
@@ -79,6 +86,7 @@ function AdminDashboard() {
           {activeTab === "portfolio" && <PortfolioManager />}
           {activeTab === "testimonials" && <TestimonialsManager />}
           {activeTab === "blog" && <BlogManager />}
+          {activeTab === "home" && <HomeManager />}
         </div>
       </div>
     </div>

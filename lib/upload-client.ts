@@ -1,6 +1,6 @@
 import imageCompression from "browser-image-compression";
 
-export type UploadFolder = "projects" | "blog";
+export type UploadFolder = "projects" | "blog" | "site";
 
 // Reduz a foto no navegador antes do envio (upload rápido, mesmo no 4G).
 // O servidor ainda normaliza para WebP e remove metadados.

@@ -10,6 +10,15 @@ import {
 
 // Chaves em snake_case para os tipos inferidos baterem com lib/types.ts.
 
+/** Ajustes do site em chave/valor (ex.: fotos da home escolhidas no admin). */
+export const siteSettings = pgTable("site_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
+    .notNull()
+    .defaultNow(),
+});
+
 export const projects = pgTable(
   "projects",
   {

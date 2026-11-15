@@ -1,7 +1,12 @@
-import { and, asc, count, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
-import { posts, projects, testimonials } from "@/lib/db/schema";
+import { posts, projects, siteSettings, testimonials } from "@/lib/db/schema";
+import {
+  HOME_IMAGE_DEFAULTS,
+  HOME_IMAGE_KEYS,
+  type HomeImages,
+} from "@/lib/home-images";
 import type { Post, Project, Testimonial } from "@/lib/types";
 
 export const PROJECTS_PER_PAGE = 5;
@@ -12,6 +17,7 @@ export const CACHE_TAGS = {
   projects: "projects",
   testimonials: "testimonials",
   posts: "posts",
+  site: "site",
 } as const;
 
 export type PublicTestimonial = Pick<Testimonial, "id" | "client_name" | "text">;
@@ -118,6 +124,31 @@ export async function getHomeProjects(): Promise<HomeProject[]> {
   } catch (error: unknown) {
     console.error("Erro ao buscar projetos da home:", error);
     return [];
+  }
+}
+
+const cachedHomeImages = unstable_cache(
+  async (): Promise<HomeImages> => {
+    const rows = await db
+      .select({ key: siteSettings.key, value: siteSettings.value })
+      .from(siteSettings)
+      .where(inArray(siteSettings.key, Object.values(HOME_IMAGE_KEYS)));
+    const byKey = new Map(rows.map((row) => [row.key, row.value]));
+    return {
+      hero: byKey.get(HOME_IMAGE_KEYS.hero) ?? HOME_IMAGE_DEFAULTS.hero,
+      about: byKey.get(HOME_IMAGE_KEYS.about) ?? HOME_IMAGE_DEFAULTS.about,
+    };
+  },
+  ["home-images"],
+  { tags: [CACHE_TAGS.site] },
+);
+
+export async function getHomeImages(): Promise<HomeImages> {
+  try {
+    return await cachedHomeImages();
+  } catch (error: unknown) {
+    console.error("Erro ao buscar fotos da home:", error);
+    return { ...HOME_IMAGE_DEFAULTS };
   }
 }
 

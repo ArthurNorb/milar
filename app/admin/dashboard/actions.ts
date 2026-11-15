@@ -4,9 +4,15 @@ import { and, asc, desc, eq, like, ne, or, sql } from "drizzle-orm";
 import { revalidatePath, updateTag } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { posts, projects, testimonials } from "@/lib/db/schema";
+import { posts, projects, siteSettings, testimonials } from "@/lib/db/schema";
 import { deleteUploadedImages } from "@/lib/images";
 import { CACHE_TAGS } from "@/lib/queries";
+import {
+  HOME_IMAGE_DEFAULTS,
+  HOME_IMAGE_KEYS,
+  type HomeImageSlot,
+  type HomeImages,
+} from "@/lib/home-images";
 import {
   extractPostImageUrls,
   postPlainText,
@@ -63,7 +69,7 @@ export interface SaveProjectInput {
   image_urls: string[];
 }
 
-const IMAGE_URL_PATTERN = /^(\/uploads\/(projects|blog)\/[\w-]+\.webp|https:\/\/\S+)$/;
+const IMAGE_URL_PATTERN = /^(\/uploads\/(projects|blog|site)\/[\w-]+\.webp|https:\/\/\S+)$/;
 
 export async function saveProject(
   input: SaveProjectInput,
@@ -152,6 +158,93 @@ export async function reorderProjects(ids: number[]): Promise<ActionResult> {
     });
     revalidatePublicPages();
     return { ok: true, data: undefined };
+  } catch (error: unknown) {
+    return fail(error);
+  }
+}
+
+// ---------- Fotos da home ----------
+
+function revalidateSiteSettings() {
+  updateTag(CACHE_TAGS.site);
+  revalidatePath("/");
+}
+
+function isHomeImageSlot(value: unknown): value is HomeImageSlot {
+  return value === "hero" || value === "about";
+}
+
+async function currentHomeImages(): Promise<HomeImages> {
+  const rows = await db.select().from(siteSettings);
+  const byKey = new Map(rows.map((row) => [row.key, row.value]));
+  return {
+    hero: byKey.get(HOME_IMAGE_KEYS.hero) ?? HOME_IMAGE_DEFAULTS.hero,
+    about: byKey.get(HOME_IMAGE_KEYS.about) ?? HOME_IMAGE_DEFAULTS.about,
+  };
+}
+
+export async function getHomeImagesAdmin(): Promise<ActionResult<HomeImages>> {
+  try {
+    await requireAdmin();
+    return { ok: true, data: await currentHomeImages() };
+  } catch (error: unknown) {
+    return fail(error);
+  }
+}
+
+export async function setHomeImage(
+  slot: HomeImageSlot,
+  url: string,
+): Promise<ActionResult<HomeImages>> {
+  try {
+    await requireAdmin();
+    if (!isHomeImageSlot(slot)) throw new Error("Foto inválida.");
+    if (!IMAGE_URL_PATTERN.test(url)) throw new Error("URL de imagem inválida.");
+
+    const previous = (await currentHomeImages())[slot];
+
+    await db
+      .insert(siteSettings)
+      .values({ key: HOME_IMAGE_KEYS[slot], value: url })
+      .onConflictDoUpdate({
+        target: siteSettings.key,
+        set: { value: url, updated_at: new Date().toISOString() },
+      });
+
+    // A foto anterior deixa de ocupar disco (a original em public/ é ignorada).
+    if (previous !== url) {
+      try {
+        await deleteUploadedImages([previous]);
+      } catch (error: unknown) {
+        console.warn("Falha ao limpar imagem do disco:", error);
+      }
+    }
+
+    revalidateSiteSettings();
+    return { ok: true, data: await currentHomeImages() };
+  } catch (error: unknown) {
+    return fail(error);
+  }
+}
+
+export async function resetHomeImage(
+  slot: HomeImageSlot,
+): Promise<ActionResult<HomeImages>> {
+  try {
+    await requireAdmin();
+    if (!isHomeImageSlot(slot)) throw new Error("Foto inválida.");
+
+    const previous = (await currentHomeImages())[slot];
+    await db.delete(siteSettings).where(eq(siteSettings.key, HOME_IMAGE_KEYS[slot]));
+
+    try {
+      await deleteUploadedImages([previous]);
+    } catch (error: unknown) {
+      console.warn("Falha ao limpar imagem do disco:", error);
+    }
+
+    revalidateSiteSettings();
+    return { ok: true, data: await currentHomeImages() };
   } catch (error: unknown) {
     return fail(error);
   }

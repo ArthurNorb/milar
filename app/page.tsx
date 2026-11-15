@@ -3,7 +3,11 @@ import { ArrowRight, PenLine } from "lucide-react";
 import Link from "next/link";
 import { siteConfig } from "@/lib/site-config";
 import Image from "next/image";
-import { getApprovedTestimonials, getHomeProjects } from "@/lib/queries";
+import {
+  getApprovedTestimonials,
+  getHomeImages,
+  getHomeProjects,
+} from "@/lib/queries";
 import HomeProjectsCarousel from "@/components/home-projects-carousel";
 import TestimonialsCarousel from "@/components/testimonials-carousel";
 import TestimonialForm from "@/components/testimonial-form";
@@ -22,9 +26,10 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [testimonials, homeProjects] = await Promise.all([
+  const [testimonials, homeProjects, homeImages] = await Promise.all([
     getApprovedTestimonials(),
     getHomeProjects(),
+    getHomeImages(),
   ]);
 
   return (
@@ -64,19 +69,18 @@ export default async function HomePage() {
               residenciais utilizando estratégias e conceitos da neurociência
               que, através do ambiente, conseguem gerar mais qualidade de vida e
               bem-estar, de forma totalmente personalizada e garantindo estética
-              e personalidade.
-            </p>
-            <p className="text-base md:text-lg lg:text-xl text-[#e3d9ce]/80 max-w-lg font-light leading-relaxed">
-              À frente do escritório, Giovanna Lima é arquiteta e master em
-              neuroarquitetura. Tem experiência sólida em execução de projetos,
-              gestão de projetos e gestão equipe. Hoje, oferecemos 03 principais
-              formas de serviço: Consultoria, Projeto arquitetônico ou de
-              interiores e Acompanhamento de obra.
+              com personalidade
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4 md:pt-6 w-full sm:w-auto">
               <Button
-                render={<a href={siteConfig.projectFormUrl} target="_blank" rel="noopener noreferrer" />}
+                render={
+                  <a
+                    href={siteConfig.projectFormUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  />
+                }
                 nativeButton={false}
                 size="lg"
                 className="w-full sm:w-auto px-8 h-14 bg-[#c3532e] hover:bg-[#c3532e]/80 text-[#e3d9ce] font-['Spartan'] text-xs tracking-wider uppercase rounded-full transition-transform hover:scale-105 duration-300 flex items-center justify-center shadow-lg"
@@ -99,7 +103,7 @@ export default async function HomePage() {
             <div className="absolute inset-0 bg-[#c3532e] transform translate-x-3 translate-y-3 md:translate-x-4 md:translate-y-4 transition-transform group-hover:translate-x-6 group-hover:translate-y-6 duration-700 ease-out z-0" />
             <div className="relative h-full w-full overflow-hidden border-4 border-[#2e3d30] shadow-2xl z-10 bg-[#bfa086]">
               <Image
-                src="/hero.png"
+                src={homeImages.hero}
                 alt="Projeto Milar"
                 fill
                 sizes="(max-width: 1024px) 100vw, 42vw"
@@ -111,7 +115,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="sobre" className="py-20 md:py-40 relative z-10 overflow-hidden">
+      <section
+        id="sobre"
+        className="py-20 md:py-40 relative z-10 overflow-hidden"
+      >
         <div className="absolute inset-0 z-0 opacity-[0.04] pointer-events-none">
           <Image
             src="/estampas/Contorno Macro 04.png"
@@ -129,7 +136,7 @@ export default async function HomePage() {
                 <div className="absolute inset-0 bg-[#756d47] -rotate-6 transition-transform group-hover:rotate-0 duration-500" />
                 <div className="relative h-full w-full overflow-hidden bg-[#a39f86] z-10 border-[6px] md:border-8 border-[#e3d9ce]">
                   <Image
-                    src="/gi.jpeg"
+                    src={homeImages.about}
                     alt="Giovanna Lima"
                     fill
                     sizes="(max-width: 768px) 80vw, 448px"
@@ -160,16 +167,19 @@ export default async function HomePage() {
                 <p>
                   Minha paixão pela arquitetura nasceu na infância e se
                   transformou em uma carreira dedicada a servir e transformar
-                  vidas. Utilizo a neurociência aplicada para moldar o
-                  comportamento humano para melhor.
+                  vidas. Sou formada pela Universidade Federal de Ouro Preto e
+                  Master em Neuroarquitetura pelo IPOG (Instituto de
+                  Pós-Graduação e Graduação). Tem experiência sólida em execução
+                  de projetos, assessoria em obras e gestão equipe.
                 </p>
                 <p>
                   Com anos de experiência no mercado, deixei de entregar apenas
                   projetos para entregar soluções de vida.
                 </p>
                 <p className="pl-5 border-l-2 border-[#87381e] italic text-lg md:text-xl text-[#87381e]">
-                  &quot;Um projeto só faz sentido quando ele toca o coração e melhora
-                  o cotidiano de acordo com a sua necessidade.&quot;
+                  &quot;Um projeto pode ser bonito, mas ele só faz sentido
+                  quando ele transforma uma casa em lar, gerando bem-estar de
+                  acordo com a sua necessidade.&quot;
                 </p>
               </div>
 
@@ -222,7 +232,10 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section id="feedbacks" className="py-20 md:py-32 bg-[#2e3d30] text-[#e3d9ce] relative rounded-t-[2.5rem] md:rounded-t-[5rem]">
+      <section
+        id="feedbacks"
+        className="py-20 md:py-32 bg-[#2e3d30] text-[#e3d9ce] relative rounded-t-[2.5rem] md:rounded-t-[5rem]"
+      >
         <div className="container max-w-7xl px-5 md:px-12 mx-auto relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-20 gap-6 md:gap-8 border-b border-[#e3d9ce]/20 pb-8 md:pb-12">
             <div className="space-y-3 md:space-y-4 max-w-2xl">

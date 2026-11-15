@@ -15,6 +15,13 @@
       "when": 1794416944504,
       "tag": "0001_lush_legion",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794755180716,
+      "tag": "0002_modern_tusk",
+      "breakpoints": true
     }
   ]
 }
