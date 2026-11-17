@@ -44,12 +44,8 @@ export default async function BlogPage({ searchParams }: BlogProps) {
             <span className="text-[10px] md:text-xs font-['Spartan'] tracking-[0.3em] uppercase text-[#87381e]">
               Blog
             </span>
-            <h1 className="text-[2.5rem] leading-tight md:text-6xl font-serif tracking-tight text-[#2e3d30]">
-              Entre projetos e <span className="italic text-[#756d47]">conversas</span>
-            </h1>
-            <p className="text-[#2e3d30]/80 font-light leading-relaxed text-base md:text-lg">
-              Neuroarquitetura, obras e interiores explicados de um jeito
-              simples, para você planejar uma casa que acolhe a sua rotina.
+            <p className="text-[#2e3d30]/80 font-light leading-relaxed text-base md:text-lg mt-6">
+              Por aqui, compartilho sobre a Neuroarquitetura: A ciência por trás de espaços pensados para promover qualidade de vida e bem-estar.
             </p>
           </div>
           {total > 0 && (
